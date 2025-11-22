@@ -14,7 +14,7 @@ title: "第1回：Falcoとは何か？ - Runtime Securityの本質"
 
 - Falcoの誕生背景（Sysdig → CNCF）
 - カーネルレベルのランタイム検知という唯一性
-- Falco vs FalcoCTL / Falcosidekick / Sysdig Secure（製品版）との関係
+- Falcoエコシステム（本体 / FalcoCTL / Falcosidekick / Sysdig Secure）の関係
 - どういうシナリオで強いのか（権限昇格、コンテナ脱出、クラスタ侵害、異常なプロセス）
 
 ---
@@ -174,7 +174,7 @@ history -c
 | Tetragon | eBPF | Syscall + ネットワーク | 類似（より高機能） |
 | Tracee | eBPF | Syscall | 類似（セキュリティ研究向け） |
 
-**Tetragon vs Falco**: Tetragonは後発でより高機能ですが、FalcoはCNCF卒業プロジェクトとしての実績とエコシステムが強みです。
+**Tetragonとの比較**: Tetragonは後発でより高機能ですが、FalcoはCNCF卒業プロジェクトとしての実績とエコシステムが強みです。
 
 ---
 
