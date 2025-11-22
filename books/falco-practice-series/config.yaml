@@ -1,17 +1,18 @@
 title: "Falco実践シリーズ - Kubernetesランタイムセキュリティの実装ガイド"
 summary: "FalcoによるKubernetesランタイムセキュリティの基礎から実運用まで、10回の連載で段階的に学ぶ実践ガイド"
 topics: ["kubernetes", "falco", "security", "devops", "devsecops"]
-published: false
+published: true
 price: 0 # 無料で公開
 # 本に含めるチャプターを順番に並べましょう
 chapters:
   - chapter01-what-is-falco
-  - chapter02-falco-architecture
-  - chapter03-hands-on-quickstart
-  - chapter04-writing-rules-beginner
-  - chapter05-writing-rules-intermediate
-  - chapter06-falcosidekick-visualization
-  - chapter07-k8s-audit-integration
-  - chapter08-cicd-devsecops
-  - chapter09-production-deployment
-  - chapter10-advanced-topics
+  # 第2回以降は順次公開予定
+  # - chapter02-falco-architecture
+  # - chapter03-hands-on-quickstart
+  # - chapter04-writing-rules-beginner
+  # - chapter05-writing-rules-intermediate
+  # - chapter06-falcosidekick-visualization
+  # - chapter07-k8s-audit-integration
+  # - chapter08-cicd-devsecops
+  # - chapter09-production-deployment
+  # - chapter10-advanced-topics
