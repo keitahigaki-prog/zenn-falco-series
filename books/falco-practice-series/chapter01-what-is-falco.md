@@ -15,7 +15,7 @@ title: "第1回：Falcoとは何か？ - Runtime Securityの本質"
 - Falcoの誕生背景（Sysdig → CNCF）
 - カーネルレベルのランタイム検知という唯一性
 - Falcoエコシステム（本体 / FalcoCTL / Falcosidekick / Sysdig Secure）の関係
-- どういうシナリオで強いのか（権限昇格、コンテナ脱出、クラスタ侵害、異常なプロセス）
+- どういうシナリオで強いのか（権限昇格、Container Escape、Cluster Compromise、異常なプロセス）
 
 ---
 
@@ -55,9 +55,9 @@ Sysdig社は元々、Linuxカーネルのシステムコール（syscall）を�
 
 **2018年**、Sysdig社はFalcoをCloud Native Computing Foundation（CNCF）に寄贈し、インキュベーションプロジェクトとして採択されました。同年、Falcoは先駆的に**eBPFドライバを導入**し、カーネルモジュールに依存しない実装を実現しました。
 
-そして**2024年11月5日、CNCFの「卒業プロジェクト」に昇格**。これは、KubernetesやPrometheusと同じ最高レベルの成熟度評価を受けたことを意味します。
+そして**2024年11月5日、CNCFの「Graduated Project（卒業プロジェクト）」に昇格**。これは、KubernetesやPrometheusと同じ最高レベルの成熟度評価を受けたことを意味します。
 
-卒業プロジェクトの条件：
+Graduated Projectの条件：
 - プロダクショングレードの品質
 - 複数の組織による採用実績
 - 活発なコミュニティ（世界中の開発者による大規模コミュニティ）
@@ -294,7 +294,7 @@ $ chmod +s /bin/bash  # SUID設定
   priority: CRITICAL
 ```
 
-### 2. コンテナ脱出の検知
+### 2. Container Escapeの検知
 
 **攻撃シナリオ**: コンテナからホストシステムへ脱出する
 
@@ -320,7 +320,7 @@ $ chroot /mnt/host
   priority: CRITICAL
 ```
 
-### 3. クラスタ侵害の検知
+### 3. Cluster Compromiseの検知
 
 **攻撃シナリオ**: Podから脱出してkubeletの認証情報を盗み、クラスタ全体を侵害
 
@@ -389,10 +389,10 @@ Falcoは**「コンテナが何をしているか」の振る舞いを監視**�
 
 この章では、Falcoの本質を学びました：
 
-- **誕生背景**: Sysdig社が開発し、CNCF卒業プロジェクトとして成熟
+- **誕生背景**: Sysdig社が開発し、CNCF Graduated Projectとして成熟
 - **唯一性**: カーネルレベルのsyscall監視で改ざん不可能な検知
 - **エコシステム**: Falco本体 + FalcoCTL + Falcosidekick + Sysdig Secure
-- **強み**: 権限昇格、コンテナ脱出、クラスタ侵害、異常プロセスの検知
+- **強み**: 権限昇格、Container Escape、Cluster Compromise、異常プロセスの検知
 
 次章では、Falcoの内部アーキテクチャを深掘りし、**カーネルモジュール vs eBPF**の選び方や、システムコールの監視がどのように実装されているかを解説します。
 
