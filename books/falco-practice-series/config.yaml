@@ -7,8 +7,8 @@ price: 0 # 無料で公開
 chapters:
   - chapter01-what-is-falco
   - chapter02-falco-architecture
-  # 第3回以降は順次公開予定
-  # - chapter03-hands-on-quickstart
+  - chapter03-hands-on-quickstart  # 第3回を追加
+  # 第4回以降は順次公開予定
   # - chapter04-writing-rules-beginner
   # - chapter05-writing-rules-intermediate
   # - chapter06-falcosidekick-visualization
