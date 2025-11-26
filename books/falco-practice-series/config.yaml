@@ -8,8 +8,9 @@ chapters:
   - chapter01-what-is-falco
   - chapter02-falco-architecture
   - chapter03-hands-on-quickstart  # 第3回を追加
-  # 第4回以降は順次公開予定
-  # - chapter04-writing-rules-beginner
+  - chapter04-writing-rules-beginner  # 第4回を追加
+  # 第5回以降は順次公開予定
+  # - chapter05-writing-rules-intermediate
   # - chapter05-writing-rules-intermediate
   # - chapter06-falcosidekick-visualization
   # - chapter07-k8s-audit-integration
