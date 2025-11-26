@@ -11,7 +11,7 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | 第3回 | [ローカル環境でFalcoを動かす（最速10分Hands-on）](books/falco-practice-series/chapter03-hands-on-quickstart.md) | ✅ 執筆完了 |
 | 第4回 | [Falcoのルールを書く（初心者編）](books/falco-practice-series/chapter04-writing-rules-beginner.md) | ✅ 執筆完了 |
 | 第5回 | [Falcoのルールを書く（中級編）- 実運用に寄せる](books/falco-practice-series/chapter05-writing-rules-intermediate.md) | ✅ 執筆完了 |
-| 第6回 | [Falcosidekick / UI可視化を入れてみる](books/falco-practice-series/chapter06-falcosidekick-visualization.md) | 📝 未執筆 |
+| 第6回 | [Falcosidekick / UI可視化を入れてみる](books/falco-practice-series/chapter06-falcosidekick-visualization.md) | ✅ 執筆完了 |
 | 第7回 | [K8s Audit Log × Falcoの連携](books/falco-practice-series/chapter07-k8s-audit-integration.md) | 📝 未執筆 |
 | 第8回 | [Falco + CI/CD / DevSecOpsシナリオ](books/falco-practice-series/chapter08-cicd-devsecops.md) | 📝 未執筆 |
 | 第9回 | [本番環境にFalcoを入れる時の設計](books/falco-practice-series/chapter09-production-deployment.md) | 📝 未執筆 |

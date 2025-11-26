@@ -10,8 +10,8 @@ chapters:
   - chapter03-hands-on-quickstart  # 第3回を追加
   - chapter04-writing-rules-beginner  # 第4回を追加
   - chapter05-writing-rules-intermediate  # 第5回を追加
-  # 第6回以降は順次公開予定
-  # - chapter06-falcosidekick-visualization
+  - chapter06-falcosidekick-visualization  # 第6回を追加
+  # 第7回以降は順次公開予定
   # - chapter07-k8s-audit-integration
   # - chapter08-cicd-devsecops
   # - chapter09-production-deployment
