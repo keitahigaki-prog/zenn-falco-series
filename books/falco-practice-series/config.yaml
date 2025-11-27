@@ -12,7 +12,7 @@ chapters:
   - chapter05-writing-rules-intermediate  # 第5回を追加
   - chapter06-falcosidekick-visualization  # 第6回を追加
   - chapter07-k8s-audit-integration  # 第7回を追加
-  # 第8回以降は順次公開予定
-  # - chapter08-cicd-devsecops
+  - chapter08-cicd-devsecops  # 第8回を追加
+  # 第9回以降は順次公開予定
   # - chapter09-production-deployment
   # - chapter10-advanced-topics
