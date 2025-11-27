@@ -51,7 +51,7 @@ title: "第3回：ローカル環境でFalcoを動かす（最速10分Hands-on�
 ```bash
 # Dockerのバージョン確認
 docker --version
-# 期待される出力: Docker version 24.0.0 以降
+# 期待される出力: Docker version 25.0.0 以降
 
 # Dockerが動作しているか確認
 docker ps
@@ -383,7 +383,7 @@ Kubernetesクラスター内でFalcoを試したい場合は、Kindを使用し�
 brew install kind
 
 # Linux
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.30.0/kind-linux-amd64
 chmod +x ./kind
 sudo mv ./kind /usr/local/bin/kind
 ```
