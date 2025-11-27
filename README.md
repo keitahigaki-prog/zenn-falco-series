@@ -14,7 +14,7 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | 第6回 | [Falcosidekick / UI可視化を入れてみる](books/falco-practice-series/chapter06-falcosidekick-visualization.md) | ✅ 執筆完了 |
 | 第7回 | [K8s Audit Log × Falcoの連携](books/falco-practice-series/chapter07-k8s-audit-integration.md) | ✅ 執筆完了 |
 | 第8回 | [Falco + CI/CD / DevSecOpsシナリオ](books/falco-practice-series/chapter08-cicd-devsecops.md) | ✅ 執筆完了 |
-| 第9回 | [本番環境にFalcoを入れる時の設計](books/falco-practice-series/chapter09-production-deployment.md) | 📝 未執筆 |
+| 第9回 | [本番環境にFalcoを入れる時の設計](books/falco-practice-series/chapter09-production-deployment.md) | ✅ 執筆完了 |
 | 第10回 | [Falcoの発展系（OPA Gatekeeper / Kyverno との比較）](books/falco-practice-series/chapter10-advanced-topics.md) | 📝 未執筆 |
 
 ## 開発環境
