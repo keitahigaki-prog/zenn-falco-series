@@ -53,17 +53,31 @@ Sysdig社は元々、Linuxカーネルのシステムコール（syscall）を�
 
 ### CNCF卒業プロジェクトとしての地位
 
-**2018年**、Sysdig社はFalcoをCloud Native Computing Foundation（CNCF）に寄贈し、インキュベーションプロジェクトとして採択されました。同年、Falcoは先駆的に**eBPFドライバを導入**し、カーネルモジュールに依存しない実装を実現しました。
+Falcoは**2018年10月10日にCNCF Sandboxプロジェクト**として寄贈され、**2020年1月8日にCNCF Incubatingプロジェクト**に昇格しました。同年、Falcoは先駆的に**eBPFドライバを導入**し、カーネルモジュールに依存しない実装を実現しました。
 
-そして**2024年11月5日、CNCFの「Graduated Project（卒業プロジェクト）」に昇格**。これは、KubernetesやPrometheusと同じ最高レベルの成熟度評価を受けたことを意味します。
+そして**2024年2月29日、CNCFの「Graduated Project（卒業プロジェクト）」に昇格**。これは、KubernetesやPrometheusと同じ最高レベルの成熟度評価を受けたことを意味します。特筆すべきは、**Cloud Native Security分野でのOSSとして初のGraduated Project**という快挙です。
 
-Graduated Projectの条件：
+**CNCF成熟度の軌跡**：
+
+| 日付 | ステータス | 注釈 |
+|------|-----------|------|
+| 2018/10/10 | CNCF Sandbox | Sysdig社によって寄贈 |
+| 2020/01/08 | CNCF Incubating | 採用実績やガバナンス体制が正式に評価 |
+| 2024/02/29 | CNCF Graduated | Cloud Native Security系OSSでは初の最高ステージ |
+
+**Graduated Projectの条件**：
 - プロダクショングレードの品質
-- 複数の組織による採用実績
+- 複数の組織による本番環境での採用実績
 - 活発なコミュニティ（世界中の開発者による大規模コミュニティ）
 - セキュリティ監査の合格
 
-Falcoは**ランタイムセキュリティ分野で事実上の標準**として、世界中で採用されています。特に、Falco libsとsysdigツールはこの分野の技術基盤として広く使われています。
+**実績指標（2025年時点）**：
+- **GitHub Stars**: 9,000+ ([公式リポジトリ](https://github.com/falcosecurity/falco))
+- **コントリビューター**: 370+ 名
+- **ダウンロード数**: 4,000万DL以上
+- **採用企業**: Adobe, Airbnb, Cloudflare, Yahoo! JAPAN, その他多数
+
+Falcoは**ランタイムセキュリティ分野で事実上の標準**として、世界中のエンタープライズ企業で採用されています。特に、Falco libsとsysdigツールはこの分野の技術基盤として広く使われています。
 
 ### なぜRuntime Securityが必要なのか
 
@@ -402,10 +416,22 @@ Falcoは**「コンテナが何をしているか」の振る舞いを監視**�
 
 ## 参考資料
 
+### 公式ドキュメント
 - [Falco公式サイト](https://falco.org/)
 - [CNCF Falcoプロジェクトページ](https://www.cncf.io/projects/falco/)
-- [Falco GitHub Repository](https://github.com/falcosecurity/falco)
+- [Falco GitHub Repository](https://github.com/falcosecurity/falco) - Stars 9,000+, Contributors 370+
+- [Falco Documentation](https://falco.org/docs/)
+
+### CNCF Graduated関連
+- [CNCF Announces Falco Graduation](https://www.cncf.io/announcements/2024/02/29/cloud-native-computing-foundation-announces-falco-graduation/) - 公式発表（2024/02/29）
 - [Falco CNCF卒業プロジェクト発表（日本語）](https://www.sysdig.com/jp/blog/falco-cncf-graduation)
+- [CNCF Graduated Projects一覧](https://www.cncf.io/projects/)
+
+### 技術背景・開発者情報
 - [Creator of Wireshark Joins Sysdig](https://www.businesswire.com/news/home/20220113005266/en/​​Creator-of-Wireshark-Joins-Sysdig-to-Extend-the-Open-Source-Project-for-Cloud-Security)
 - [How Falco and Wireshark paved the way for Stratoshark](https://www.sysdig.com/blog/how-falco-and-wireshark-paved-the-way-for-stratoshark)
 - [Loris Degioanni Interview - Unite.AI](https://www.unite.ai/loris-degioanni-chief-technology-officer-founder-at-sysdig-interview-series/)
+
+### 採用事例・統計
+- [Falco Adopters](https://github.com/falcosecurity/falco/blob/master/ADOPTERS.md) - Adobe, Airbnb, Cloudflare, Yahoo! JAPANなどの採用企業一覧
+- [Falco Statistics - DevStats](https://falco.devstats.cncf.io/d/8/dashboards?orgId=1) - CNCF公式の開発統計
