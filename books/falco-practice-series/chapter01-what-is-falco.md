@@ -74,7 +74,7 @@ Falcoは**2018年10月10日にCNCF Sandboxプロジェクト**として寄贈さ
 **実績指標（2025年時点）**：
 - **GitHub Stars**: 9,000+ ([公式リポジトリ](https://github.com/falcosecurity/falco))
 - **コントリビューター**: 370+ 名
-- **ダウンロード数**: 4,000万DL以上
+- **ダウンロード数**: 1億5,000万DL以上 ([Sysdig公式ブログ](https://www.sysdig.com/blog/the-state-of-falco))
 - **採用企業**: Adobe, Airbnb, Cloudflare, Yahoo! JAPAN, その他多数
 
 Falcoは**ランタイムセキュリティ分野で事実上の標準**として、世界中のエンタープライズ企業で採用されています。特に、Falco libsとsysdigツールはこの分野の技術基盤として広く使われています。
