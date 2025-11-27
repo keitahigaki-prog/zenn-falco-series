@@ -21,21 +21,22 @@ title: "第1回：Falcoとは何か？ - Runtime Securityの本質"
 
 ## Falcoの誕生
 
-### Wiresharkの共同創設者が生み出したOSS
+### Wiresharkの生みの親が生み出したOSS
 
 Falcoは、**2016年にSysdig社がオープンソースプロジェクトとして公開**したランタイムセキュリティツールです。その起源は2014年に遡り、Falcoドライバーの最初のコードが書かれました。
 
-Sysdig社の創設者である**Loris Degioanni（ロリス・デジョアンニ）**は、実はあの有名なネットワークアナライザー**Wiresharkの共同創設者**でもあります。15年以上前にGerald Combsと共にWiresharkを立ち上げ、現在2,000万人以上のユーザーに使われるツールに育て上げました。
+Sysdig社の創設者である**Loris Degioanni（ロリス・デジョアンニ）**は、実はあの有名なネットワークアナライザー**Wiresharkの生みの親の一人**です。大学生時代に開発したWinPcapがEthereal（Wiresharkの前身）のWindows移植を可能にし、2006年には**Wireshark創設者のGerald Combsと共にEtherealをWiresharkに改名**しました。その後、**Gerald CombsもSysdigチームに参加**し、二人は再びタッグを組んでFalcoやStratosharkの開発を推進しています。Wiresharkは現在、年間2,000万以上のダウンロードを記録し、世界中で使われるツールとなっています。
 
-Loris Degioanniの技術的系譜：
+Loris Degioanni × Gerald Combsの技術的系譜：
 ```
-Wireshark (2000年代)
+Ethereal/Wireshark (1998年～) - Gerald Combs創設
+    ↓ Lorisと共に2006年に改名
     ↓ ネットワークパケット層の可視化
-sysdig (2013年)
+sysdig (2013年) - Loris Degioanni創設
     ↓ システムコール層の可視化
-Falco (2016年)
+Falco (2016年) - Gerald参加
     ↓ セキュリティ検知に特化
-Stratoshark (2024年)
+Stratoshark (2025年) - Gerald & Loris
     ↓ クラウド時代のWireshark
 ```
 
@@ -53,7 +54,7 @@ Sysdig社は元々、Linuxカーネルのシステムコール（syscall）を�
 
 ### CNCF卒業プロジェクトとしての地位
 
-Falcoは**2018年10月10日にCNCF Sandboxプロジェクト**として寄贈され、**2020年1月8日にCNCF Incubatingプロジェクト**に昇格しました。同年、Falcoは先駆的に**eBPFドライバを導入**し、カーネルモジュールに依存しない実装を実現しました。
+Falcoは**2018年10月10日にCNCF Sandboxプロジェクト**として寄贈され、**2020年1月8日にCNCF Incubatingプロジェクト**に昇格しました。**2020年には先駆的にeBPFドライバを導入**し、カーネルモジュールに依存しない実装を実現しました。
 
 そして**2024年2月29日、CNCFの「Graduated Project（卒業プロジェクト）」に昇格**。これは、KubernetesやPrometheusと同じ最高レベルの成熟度評価を受けたことを意味します。特筆すべきは、**Cloud Native Security分野でのOSSとして初のGraduated Project**という快挙です。
 
@@ -71,11 +72,11 @@ Falcoは**2018年10月10日にCNCF Sandboxプロジェクト**として寄贈さ
 - 活発なコミュニティ（世界中の開発者による大規模コミュニティ）
 - セキュリティ監査の合格
 
-**実績指標（2025年時点）**：
-- **GitHub Stars**: 9,000+ ([公式リポジトリ](https://github.com/falcosecurity/falco))
-- **コントリビューター**: 370+ 名
-- **ダウンロード数**: 1億5,000万DL以上 ([Sysdig公式ブログ](https://www.sysdig.com/blog/the-state-of-falco))
-- **採用企業**: Adobe, Airbnb, Cloudflare, Yahoo! JAPAN, その他多数
+**実績指標（2024年時点）**：
+- **GitHub Stars**: 8,000+ ([公式リポジトリ](https://github.com/falcosecurity/falco))
+- **コントリビューター**: 200+名（メインリポジトリ）
+- **ダウンロード数**: 1億3,000万DL以上 ([Sysdig公式ブログ](https://www.sysdig.com/blog/the-state-of-falco))
+- **採用企業**: Adobe, Airbnb, Cloudflare, Yahoo! JAPAN, その他多数 ([採用企業一覧](https://github.com/falcosecurity/falco/blob/master/ADOPTERS.md))
 
 Falcoは**ランタイムセキュリティ分野で事実上の標準**として、世界中のエンタープライズ企業で採用されています。特に、Falco libsとsysdigツールはこの分野の技術基盤として広く使われています。
 
@@ -158,7 +159,7 @@ Loris Degioanniが一貫して追求してきたのは、**「低レイヤーの
 | **対象レイヤー** | OSI L2-L7 | カーネル層 |
 | **ユースケース** | ネットワーク診断 | ランタイムセキュリティ |
 | **改ざん可能性** | 不可能（パケットキャプチャ） | 不可能（カーネルフック） |
-| **ユーザー数** | 2,000万人以上 | 1億5,000万DL以上 |
+| **利用状況** | 年間2,000万DL以上 | 累計1億3,000万DL以上 |
 
 Wiresharkでネットワークトラフィックを「盗聴」するように、Falcoはシステムコールを「盗聴」します。どちらも、**アプリケーションが「実際に何をしているか」を隠すことができない層**で監視します。
 
@@ -419,7 +420,7 @@ Falcoは**「コンテナが何をしているか」の振る舞いを監視**�
 ### 公式ドキュメント
 - [Falco公式サイト](https://falco.org/)
 - [CNCF Falcoプロジェクトページ](https://www.cncf.io/projects/falco/)
-- [Falco GitHub Repository](https://github.com/falcosecurity/falco) - Stars 9,000+, Contributors 370+
+- [Falco GitHub Repository](https://github.com/falcosecurity/falco) - Stars 8,000+, Contributors 200+
 - [Falco Documentation](https://falco.org/docs/)
 
 ### CNCF Graduated関連
