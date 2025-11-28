@@ -14,5 +14,4 @@ chapters:
   - chapter07-k8s-audit-integration  # 第7回を追加
   - chapter08-cicd-devsecops  # 第8回を追加
   - chapter09-production-deployment  # 第9回を追加
-  # 第10回は順次公開予定
-  # - chapter10-advanced-topics
+  - chapter10-advanced-topics  # 第10回を追加（完結）
