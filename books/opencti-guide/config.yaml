@@ -1,0 +1,22 @@
+title: "OpenCTI & OpenAEV 完全ガイド — エンジニアのための脅威インテリジェンス入門"
+summary: |
+  CTIって何？OpenCTIって何が見れるの？OpenAEVって何をテストするの？SOCにどう役立つの？
+  という疑問に答える、エンジニア向けの入門書です。
+  CTIの基礎からOpenCTIの全機能解説、OpenAEVによる攻撃シミュレーション、
+  OSS構築・運用、ゲームデイ演習まで。全8章の実践ガイドです。
+topics: ["opencti", "openaev", "security", "cti", "threatintelligence"]
+published: true
+price: 0
+toc_depth: 2
+chapters:
+  - 01-cti-intro
+  - p2-opencti
+  - 02-opencti-dashboard
+  - 03-data-model
+  - 04-attck-connectors-api
+  - p3-openaev
+  - 05-openaev-scenarios
+  - 06-testing-integration
+  - p4-oss-bestpractices
+  - 07-deploy-operations
+  - 08-gameday

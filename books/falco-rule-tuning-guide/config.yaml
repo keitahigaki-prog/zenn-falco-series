@@ -1,0 +1,26 @@
+title: "Falco実践シリーズ 続編：ルールチューニング完全ガイド"
+summary: "誤検知・ノイズを減らし、本番運用できるFalcoルール設計へ。conditionの読み方、例外設計、調査フロー、upstreamルールの扱い方、ケーススタディまで体系的に解説。"
+topics: ["falco", "kubernetes", "security", "runtime-security", "container"]
+published: true
+price: 1000
+toc_depth: 2
+chapters:
+  - introduction
+  - chapter01-why-hard
+  - chapter02-tuning-overview
+  - chapter03-condition
+  - chapter04-fields
+  - chapter05-macro-list
+  - chapter06-exceptions
+  - chapter07-triage-flow
+  - chapter08-upstream
+  - chapter09-kubernetes
+  - chapter10-case-studies
+  - chapter11-operation
+  - chapter12-faq
+  - appendix-a-field-reference
+  - appendix-b-condition-cheatsheet
+  - appendix-c-exception-patterns
+  - appendix-d-review-checklist
+  - appendix-e-production-checklist
+  - appendix-f-false-positive-catalog
