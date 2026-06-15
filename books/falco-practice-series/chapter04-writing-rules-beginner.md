@@ -10,11 +10,11 @@ Falcoルールは、YAMLファイルで記述するシンプルな構造です�
 
 ## この章で学ぶこと
 
-- ✅ Falcoルールの基本構造（rule, condition, output, priority）
-- ✅ macro（マクロ）とlist（リスト）の活用法
-- ✅ 実践的なルール例（5パターン）
-- ✅ よくある失敗パターンと対策
-- ✅ トラブルシューティングの考え方
+- [OK] Falcoルールの基本構造（rule, condition, output, priority）
+- [OK] macro（マクロ）とlist（リスト）の活用法
+- [OK] 実践的なルール例（5パターン）
+- [OK] よくある失敗パターンと対策
+- [OK] トラブルシューティングの考え方
 
 ---
 
@@ -42,11 +42,11 @@ Falcoのルールは、**5つの必須要素**で構成されます。
 
 | 要素 | 説明 | 必須 |
 |------|------|------|
-| `rule` | ルール名（一意） | ✅ |
-| `desc` | ルールの説明 | ✅ |
-| `condition` | 検知条件（Falco式） | ✅ |
-| `output` | アラート出力フォーマット | ✅ |
-| `priority` | 優先度レベル | ✅ |
+| `rule` | ルール名（一意） | [OK] |
+| `desc` | ルールの説明 | [OK] |
+| `condition` | 検知条件（Falco式） | [OK] |
+| `output` | アラート出力フォーマット | [OK] |
+| `priority` | 優先度レベル | [OK] |
 
 ### オプション要素
 
@@ -185,7 +185,7 @@ output: >
 ```
 
 **出力結果:**
-```
+```text
 15:30:45: Warning Shell spawned in container
 (user=root command=bash container=web-app-1
  image=nginx shell=bash)
@@ -359,7 +359,7 @@ docker run --rm -it alpine sh -c "apk add curl && curl https://example.com"
 
 ### 期待される出力
 
-```
+```text
 15:45:12.123456789: Warning HTTP client tool executed in container
 (user=root command=curl https://example.com
  container=sharp_pike image=alpine)
@@ -415,7 +415,7 @@ cat /etc/passwd
 
 ### 期待される出力
 
-```
+```text
 15:50:30.123456789: Warning Sensitive file opened for reading
 (user=root command=cat /etc/shadow file=/etc/shadow
  container=eloquent_morse)
@@ -787,12 +787,12 @@ condition: spawned_process and container and proc.name = curl
 
 ### 学んだこと
 
-- ✅ ルールの5つの必須要素（rule, desc, condition, output, priority）
-- ✅ condition式の書き方（演算子、論理演算）
-- ✅ macro/listによる再利用性の向上
-- ✅ 5つの実践的なルール例
-- ✅ よくある失敗パターンと対策
-- ✅ トラブルシューティングの基本
+- [OK] ルールの5つの必須要素（rule, desc, condition, output, priority）
+- [OK] condition式の書き方（演算子、論理演算）
+- [OK] macro/listによる再利用性の向上
+- [OK] 5つの実践的なルール例
+- [OK] よくある失敗パターンと対策
+- [OK] トラブルシューティングの基本
 
 ### 重要ポイント
 
@@ -842,7 +842,7 @@ condition: spawned_process and container and proc.name = curl
 ---
 
 **所要時間**: 30分
-**難易度**: ⭐⭐⭐ 中級
+**難易度**: ★★★ 中級
 **前提知識**: 第3回の内容、YAML基礎
 
 次章では、これらの基礎を応用して、本番環境で使える高度なルールを書く方法を学びます。

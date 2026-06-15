@@ -28,16 +28,16 @@ Falcoは、**2016年にSysdig社がオープンソースプロジェクトとし
 Sysdig社の創設者である**Loris Degioanni（ロリス・デジョアンニ）**は、実はあの有名なネットワークアナライザー**Wiresharkの生みの親の一人**です。大学生時代に開発したWinPcapがEthereal（Wiresharkの前身）のWindows移植を可能にし、2006年には**Wireshark創設者のGerald Combsと共にEtherealをWiresharkに改名**しました。その後、**Gerald CombsもSysdigチームに参加**し、二人は再びタッグを組んでFalcoやStratosharkの開発を推進しています。Wiresharkは現在、年間2,000万以上のダウンロードを記録し、世界中で使われるツールとなっています。
 
 Loris Degioanni × Gerald Combsの技術的系譜：
-```
-Ethereal/Wireshark (1998年～) - Gerald Combs創設
-    ↓ Lorisと共に2006年に改名
-    ↓ ネットワークパケット層の可視化
-sysdig (2013年) - Loris Degioanni創設
-    ↓ システムコール層の可視化
-Falco (2016年) - Gerald参加
-    ↓ セキュリティ検知に特化
-Stratoshark (2025年) - Gerald & Loris
-    ↓ クラウド時代のWireshark
+```mermaid
+flowchart TD
+    A["Ethereal/Wireshark (1998年～) - Gerald Combs創設"]
+    B["sysdig (2013年) - Loris Degioanni創設"]
+    C["Falco (2016年) - Gerald参加"]
+    D["Stratoshark (2025年) - Gerald & Loris"]
+    A -->|"Lorisと共に2006年に改名 / ネットワークパケット層の可視化"| B
+    B -->|"システムコール層の可視化"| C
+    C -->|"セキュリティ検知に特化"| D
+    D --> E["クラウド時代のWireshark"]
 ```
 
 Sysdig社は元々、Linuxカーネルのシステムコール（syscall）を監視する診断ツール「sysdig」を開発していました。この技術基盤（Falco libs）を応用し、**セキュリティ検知に特化させたのがFalco**です。
@@ -107,30 +107,15 @@ Falcoは**ランタイムセキュリティ分野で事実上の標準**とし�
 
 Falcoの最大の特徴は、**Linuxカーネルのシステムコール（syscall）をフックして監視する**ことです。
 
-```
-┌─────────────────────────────────────────┐
-│         アプリケーション                │
-│  (例: curl, bash, kubectl)              │
-└─────────────┬───────────────────────────┘
-              │ システムコール
-              │ (execve, open, connect, etc.)
-              ▼
-┌─────────────────────────────────────────┐
-│         Linuxカーネル                   │
-│  ┌──────────────────────────────────┐   │
-│  │  Falcoのドライバー               │   │
-│  │  - カーネルモジュール または     │   │
-│  │  - eBPFプローブ                  │   │
-│  └───────────┬──────────────────────┘   │
-└──────────────┼──────────────────────────┘
-               │ イベントストリーム
-               ▼
-┌─────────────────────────────────────────┐
-│         Falco エンジン                  │
-│  - ルールマッチング                     │
-│  - フィルタリング                       │
-│  - アラート生成                         │
-└─────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    App["アプリケーション<br>(例: curl, bash, kubectl)"]
+    subgraph Kernel["Linuxカーネル"]
+        Driver["Falcoのドライバー<br>- カーネルモジュール または<br>- eBPFプローブ"]
+    end
+    Engine["Falco エンジン<br>- ルールマッチング<br>- フィルタリング<br>- アラート生成"]
+    App -->|"システムコール<br>(execve, open, connect, etc.)"| Driver
+    Driver -->|"イベントストリーム"| Engine
 ```
 
 すべてのプロセスは、カーネルを通じて動作します。Falcoはその通信を「盗聴」することで、以下を検知できます：
@@ -240,18 +225,21 @@ Falcoルールをバージョン管理し、OCI（Open Container Initiative）�
 
 **役割**: Falcoのアラートを外部システムに送信
 
-```
-┌─────────┐       ┌──────────────┐       ┌─────────────┐
-│  Falco  │──────▶│ Falcosidekick│──────▶│   Slack     │
-└─────────┘       └──────────────┘       ├─────────────┤
-                         │                │   Teams     │
-                         ├───────────────▶├─────────────┤
-                         │                │ PagerDuty   │
-                         ├───────────────▶├─────────────┤
-                         │                │  Grafana    │
-                         └───────────────▶├─────────────┤
-                                          │ Elasticsearch│
-                                          └─────────────┘
+```mermaid
+flowchart LR
+    Falco["Falco"]
+    Sidekick["Falcosidekick"]
+    Slack["Slack"]
+    Teams["Teams"]
+    PagerDuty["PagerDuty"]
+    Grafana["Grafana"]
+    Elasticsearch["Elasticsearch"]
+    Falco --> Sidekick
+    Sidekick --> Slack
+    Sidekick --> Teams
+    Sidekick --> PagerDuty
+    Sidekick --> Grafana
+    Sidekick --> Elasticsearch
 ```
 
 対応する通知先（一部）:
@@ -269,12 +257,12 @@ Falcoルールをバージョン管理し、OCI（Open Container Initiative）�
 
 | 機能 | OSS Falco | Sysdig Secure |
 |------|-----------|---------------|
-| Runtime検知 | ✅ | ✅ |
-| カスタムルール | ✅ | ✅ |
-| Web UI | ❌ | ✅ |
-| マルチクラスタ管理 | ❌ | ✅ |
-| AIによる異常検知 | ❌ | ✅ |
-| コンプライアンス | ❌ | ✅ |
+| Runtime検知 | [OK] | [OK] |
+| カスタムルール | [OK] | [OK] |
+| Web UI | [NG] | [OK] |
+| マルチクラスタ管理 | [NG] | [OK] |
+| AIによる異常検知 | [NG] | [OK] |
+| コンプライアンス | [NG] | [OK] |
 | サポート | コミュニティ | 商用 |
 
 **選び方**:
@@ -285,7 +273,7 @@ Falcoルールをバージョン管理し、OCI（Open Container Initiative）�
 
 ## Falcoが強いシナリオ
 
-### 1. 権限昇格の検知
+### 権限昇格の検知
 
 **攻撃シナリオ**: 攻撃者がコンテナ内でroot権限を取得しようとする
 
@@ -309,7 +297,7 @@ $ chmod +s /bin/bash  # SUID設定
   priority: CRITICAL
 ```
 
-### 2. Container Escapeの検知
+### Container Escapeの検知
 
 **攻撃シナリオ**: コンテナからホストシステムへ脱出する
 
@@ -335,7 +323,7 @@ $ chroot /mnt/host
   priority: CRITICAL
 ```
 
-### 3. Cluster Compromiseの検知
+### Cluster Compromiseの検知
 
 **攻撃シナリオ**: Podから脱出してkubeletの認証情報を盗み、クラスタ全体を侵害
 
@@ -364,7 +352,7 @@ curl -k -H "Authorization: Bearer $TOKEN" \
   priority: CRITICAL
 ```
 
-### 4. 異常なプロセス実行の検知
+### 異常なプロセス実行の検知
 
 **攻撃シナリオ**: Webサーバーコンテナで攻撃者がシェルを起動
 
@@ -392,9 +380,9 @@ $ curl http://vulnerable-app/shell.php?cmd=bash
 
 これらのシナリオに共通するのは、**「正規のコンテナイメージを使っていても攻撃は成立する」**ことです。
 
-- イメージスキャン: ✅ 脆弱性なし
-- Admission Control: ✅ ポリシー準拠
-- **Runtime Security**: 🚨 **異常なシェル実行を検知！**
+- イメージスキャン: [OK] 脆弱性なし
+- Admission Control: [OK] ポリシー準拠
+- **Runtime Security**: [!] **異常なシェル実行を検知！**
 
 Falcoは**「コンテナが何をしているか」の振る舞いを監視**するため、攻撃手法に依存しない検知が可能です。
 
@@ -429,7 +417,7 @@ Falcoは**「コンテナが何をしているか」の振る舞いを監視**�
 - [CNCF Graduated Projects一覧](https://www.cncf.io/projects/)
 
 ### 技術背景・開発者情報
-- [Creator of Wireshark Joins Sysdig](https://www.businesswire.com/news/home/20220113005266/en/​​Creator-of-Wireshark-Joins-Sysdig-to-Extend-the-Open-Source-Project-for-Cloud-Security)
+- [Creator of Wireshark Joins Sysdig](https://www.businesswire.com/news/home/20220113005266/en/Creator-of-Wireshark-Joins-Sysdig-to-Extend-the-Open-Source-Project-for-Cloud-Security)
 - [How Falco and Wireshark paved the way for Stratoshark](https://www.sysdig.com/blog/how-falco-and-wireshark-paved-the-way-for-stratoshark)
 - [Loris Degioanni Interview - Unite.AI](https://www.unite.ai/loris-degioanni-chief-technology-officer-founder-at-sysdig-interview-series/)
 

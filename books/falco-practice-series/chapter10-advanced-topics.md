@@ -40,30 +40,13 @@ Kubernetesセキュリティには、**複数の防御層**が必要です。
 
 **セキュリティは多層防御が基本**です。
 
-```
-┌─────────────────────────────────────────────────────┐
-│  Layer 1: イメージスキャン（ビルド時）               │
-│  ツール: Trivy, Grype, Snyk                         │
-│  目的: 既知脆弱性の検出                              │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  Layer 2: Admission Control（デプロイ時）           │
-│  ツール: OPA Gatekeeper, Kyverno                    │
-│  目的: ポリシー違反のデプロイを防止                  │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  Layer 3: Runtime Security（実行時）                │
-│  ツール: Falco, Tetragon                            │
-│  目的: 異常な動作の検知                              │
-└─────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────┐
-│  Layer 4: Network Policy（通信制御）                │
-│  ツール: Cilium, Calico                             │
-│  目的: 不正な通信の遮断                              │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    L1["Layer 1: イメージスキャン（ビルド時）<br/>ツール: Trivy, Grype, Snyk<br/>目的: 既知脆弱性の検出"]
+    L2["Layer 2: Admission Control（デプロイ時）<br/>ツール: OPA Gatekeeper, Kyverno<br/>目的: ポリシー違反のデプロイを防止"]
+    L3["Layer 3: Runtime Security（実行時）<br/>ツール: Falco, Tetragon<br/>目的: 異常な動作の検知"]
+    L4["Layer 4: Network Policy（通信制御）<br/>ツール: Cilium, Calico<br/>目的: 不正な通信の遮断"]
+    L1 --> L2 --> L3 --> L4
 ```
 
 ### 両方必要な理由
@@ -86,9 +69,9 @@ spec:
 ```
 
 **結果**：
-- ✅ `kubectl apply`時に特権コンテナをブロック
-- ❌ 既にデプロイ済みのコンテナが権限昇格しても検知できない
-- ❌ Daemonsetなど例外を作ると、その隙を突かれる可能性
+- [OK] `kubectl apply`時に特権コンテナをブロック
+- [NG] 既にデプロイ済みのコンテナが権限昇格しても検知できない
+- [NG] Daemonsetなど例外を作ると、その隙を突かれる可能性
 
 #### シナリオ2: Runtime Securityのみ
 
@@ -101,18 +84,19 @@ spec:
 ```
 
 **結果**：
-- ❌ デプロイ自体は許可されてしまう
-- ✅ 起動後に即座にアラート
-- ✅ 攻撃者が後から権限昇格しても検知
+- [NG] デプロイ自体は許可されてしまう
+- [OK] 起動後に即座にアラート
+- [OK] 攻撃者が後から権限昇格しても検知
 
 #### シナリオ3: 両方の組み合わせ（推奨）
 
-```
-Admission Controller: 正規のデプロイでポリシー違反をブロック
-         +
-Runtime Security: 攻撃者による不正な動作を検知
-         =
-強固な多層防御
+```mermaid
+flowchart TD
+    A["Admission Controller: 正規のデプロイでポリシー違反をブロック"]
+    B["Runtime Security: 攻撃者による不正な動作を検知"]
+    C["強固な多層防御"]
+    A -->|"+"| C
+    B -->|"+"| C
 ```
 
 **実践的な使い分け**：
@@ -142,29 +126,15 @@ Runtime Security: 攻撃者による不正な動作を検知
 
 **統合パターン**：
 
-```
-┌──────────────────────────────────────────────────┐
-│          kubectl apply                            │
-└─────────────────┬────────────────────────────────┘
-                  │
-                  ▼
-┌──────────────────────────────────────────────────┐
-│  OPA Gatekeeper (Admission Controller)           │
-│  - ポリシー違反をブロック                          │
-│  - 許可されたリソースのみデプロイ                  │
-└─────────────────┬────────────────────────────────┘
-                  │ ✅ 許可
-                  ▼
-┌──────────────────────────────────────────────────┐
-│  Pod 起動                                         │
-└─────────────────┬────────────────────────────────┘
-                  │
-                  ▼
-┌──────────────────────────────────────────────────┐
-│  Falco (Runtime Security)                        │
-│  - 実行時の異常動作を検知                          │
-│  - 攻撃の試みをリアルタイム監視                    │
-└──────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["kubectl apply"]
+    B["OPA Gatekeeper (Admission Controller)<br/>- ポリシー違反をブロック<br/>- 許可されたリソースのみデプロイ"]
+    C["Pod 起動"]
+    D["Falco (Runtime Security)<br/>- 実行時の異常動作を検知<br/>- 攻撃の試みをリアルタイム監視"]
+    A --> B
+    B -->|"[OK] 許可"| C
+    C --> D
 ```
 
 #### 実装例1: 特権コンテナの制御
@@ -405,12 +375,13 @@ spec:
 
 **統合による価値**：
 
-```
-Kyverno: "正しい設定" を強制
-    +
-Falco: "正しくない動作" を検知
-    =
-完全な防御層
+```mermaid
+flowchart TD
+    A["Kyverno: 正しい設定 を強制"]
+    B["Falco: 正しくない動作 を検知"]
+    C["完全な防御層"]
+    A -->|"+"| C
+    B -->|"+"| C
 ```
 
 ---
@@ -548,27 +519,13 @@ falcoctl registry pull myregistry.io/security/falco-rules:1.0.0
 
 **GitOpsワークフロー例**：
 
-```
-┌─────────────────────────────────────────────┐
-│  1. 開発者がルールをGitHubにPush             │
-└─────────────────┬───────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────────┐
-│  2. CI/CDでfalcoctlを使ってOCIレジストリに  │
-│     プッシュ（自動バージョニング）           │
-└─────────────────┬───────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────────┐
-│  3. Kubernetes JobがFalcoCTLで定期的に     │
-│     最新ルールをプル                         │
-└─────────────────┬───────────────────────────┘
-                  │
-                  ▼
-┌─────────────────────────────────────────────┐
-│  4. Falco DaemonSetが新しいルールをロード   │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["1. 開発者がルールをGitHubにPush"]
+    B["2. CI/CDでfalcoctlを使ってOCIレジストリに<br/>プッシュ（自動バージョニング）"]
+    C["3. Kubernetes JobがFalcoCTLで定期的に<br/>最新ルールをプル"]
+    D["4. Falco DaemonSetが新しいルールをロード"]
+    A --> B --> C --> D
 ```
 
 **CronJob設定例**：
@@ -608,21 +565,17 @@ Falco 0.31.0（2022年）から、**Pluginシステム**が導入されました
 
 **Pluginアーキテクチャ**：
 
-```
-┌──────────────────────────────────────────────┐
-│          Falco Engine                         │
-└────┬────────────────────┬────────────────────┘
-     │                    │
-     ▼                    ▼
-┌─────────────┐    ┌─────────────────────────┐
-│ Syscall     │    │  Plugin Framework       │
-│ (libscap)   │    └──┬──────────┬──────────┘
-└─────────────┘       │          │
-                      ▼          ▼
-              ┌──────────┐  ┌──────────┐
-              │ K8s Audit│  │CloudTrail│
-              │ Plugin   │  │ Plugin   │
-              └──────────┘  └──────────┘
+```mermaid
+flowchart TD
+    Engine["Falco Engine"]
+    Syscall["Syscall<br/>(libscap)"]
+    PF["Plugin Framework"]
+    K8s["K8s Audit<br/>Plugin"]
+    CT["CloudTrail<br/>Plugin"]
+    Engine --> Syscall
+    Engine --> PF
+    PF --> K8s
+    PF --> CT
 ```
 
 ### 主要なPlugin
@@ -743,7 +696,7 @@ Falcoルールを**Infrastructure as Code**として管理します。
 
 **リポジトリ構成例**：
 
-```
+```text
 security-policies/
 ├── falco/
 │   ├── base/
@@ -849,9 +802,9 @@ sleep 5
 
 # Falcoログを確認
 if kubectl logs -n falco -l app=falco | grep "Privileged container"; then
-  echo "✅ Test 1 Passed"
+  echo "[OK] Test 1 Passed"
 else
-  echo "❌ Test 1 Failed"
+  echo "[NG] Test 1 Failed"
   exit 1
 fi
 
@@ -866,15 +819,15 @@ kubectl delete pod test-privileged
 
 | 機能 | OSS Falco | Sysdig Secure |
 |------|-----------|---------------|
-| **Runtime Detection** | ✅ | ✅ |
-| **カスタムルール** | ✅ | ✅ |
+| **Runtime Detection** | [OK] | [OK] |
+| **カスタムルール** | [OK] | [OK] |
 | **Web UI** | Falcosidekick UI（基本的） | 高機能なダッシュボード |
 | **マルチクラスタ管理** | 手動設定が必要 | 統合管理UI |
-| **AIによる異常検知** | ❌ | ✅ Machine Learning |
-| **脅威インテリジェンス** | ❌ | ✅ リアルタイム更新 |
-| **コンプライアンスレポート** | 手動作成 | ✅ 自動生成（PCI-DSS/SOC2など） |
-| **フォレンジック機能** | 基本的 | ✅ 詳細なプロセスツリー分析 |
-| **Vulnerability Management** | 別途ツール必要 | ✅ 統合機能 |
+| **AIによる異常検知** | [NG] | [OK] Machine Learning |
+| **脅威インテリジェンス** | [NG] | [OK] リアルタイム更新 |
+| **コンプライアンスレポート** | 手動作成 | [OK] 自動生成（PCI-DSS/SOC2など） |
+| **フォレンジック機能** | 基本的 | [OK] 詳細なプロセスツリー分析 |
+| **Vulnerability Management** | 別途ツール必要 | [OK] 統合機能 |
 | **サポート** | コミュニティ | 24/7商用サポート |
 | **価格** | 無料 | $$$（ノード課金） |
 
@@ -882,36 +835,33 @@ kubectl delete pod test-privileged
 
 #### 1. Machine Learning異常検知
 
-```
-通常のFalco: ルールベースの検知
-    ↓
-Sysdig Secure: ML + ルールベースのハイブリッド
-
-例：
-- 通常と異なるネットワーク接続パターン
-- 異常なリソース消費
-- ベースラインからの逸脱
+```mermaid
+flowchart TD
+    A["通常のFalco: ルールベースの検知"]
+    B["Sysdig Secure: ML + ルールベースのハイブリッド"]
+    A --> B
+    B --> Ex["例：<br/>- 通常と異なるネットワーク接続パターン<br/>- 異常なリソース消費<br/>- ベースラインからの逸脱"]
 ```
 
 #### 2. 統合ダッシュボード
 
-```
-┌─────────────────────────────────────────────┐
-│       Sysdig Secure Dashboard               │
-├─────────────────────────────────────────────┤
-│ ┌──────────┐ ┌──────────┐ ┌──────────┐     │
-│ │ Runtime  │ │Vulnera-  │ │Compliance│     │
-│ │ Security │ │ bility   │ │ Report   │     │
-│ └──────────┘ └──────────┘ └──────────┘     │
-├─────────────────────────────────────────────┤
-│  Alert Timeline                             │
-│  ████████████░░░░░░░░░░░░░░                 │
-│                                             │
-│  Top Threats                                │
-│  1. Cryptocurrency Mining  (5 incidents)    │
-│  2. Privilege Escalation  (2 incidents)     │
-│  3. Container Escape      (1 incident)      │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Dashboard["Sysdig Secure Dashboard"]
+    subgraph Panels[" "]
+        RS["Runtime Security"]
+        VM["Vulnerability"]
+        CR["Compliance Report"]
+    end
+    Timeline["Alert Timeline"]
+    subgraph Threats["Top Threats"]
+        T1["1. Cryptocurrency Mining (5 incidents)"]
+        T2["2. Privilege Escalation (2 incidents)"]
+        T3["3. Container Escape (1 incident)"]
+    end
+    Dashboard --> Panels
+    Dashboard --> Timeline
+    Dashboard --> Threats
 ```
 
 #### 3. フォレンジック機能
@@ -940,22 +890,13 @@ kubectl logs -n falco falco-xxxxx | grep "crypto"
 
 ### 移行パス
 
-```
-Phase 1: OSS Falcoで導入
-  - 学習コストを抑える
-  - 基本的な検知を確立
-  ↓
-Phase 2: 運用が安定
-  - ノイズ削減が完了
-  - チーム内にノウハウ蓄積
-  ↓
-Phase 3: スケール課題に直面
-  - マルチクラスタ管理が煩雑
-  - アラート分析に時間がかかる
-  ↓
-Phase 4: Sysdig Secureへ移行
-  - データは互換性あり
-  - ルールも流用可能
+```mermaid
+flowchart TD
+    P1["Phase 1: OSS Falcoで導入<br/>- 学習コストを抑える<br/>- 基本的な検知を確立"]
+    P2["Phase 2: 運用が安定<br/>- ノイズ削減が完了<br/>- チーム内にノウハウ蓄積"]
+    P3["Phase 3: スケール課題に直面<br/>- マルチクラスタ管理が煩雑<br/>- アラート分析に時間がかかる"]
+    P4["Phase 4: Sysdig Secureへ移行<br/>- データは互換性あり<br/>- ルールも流用可能"]
+    P1 --> P2 --> P3 --> P4
 ```
 
 ---
@@ -968,27 +909,13 @@ Phase 4: Sysdig Secureへ移行
 
 **CNAPPの5つの柱**：
 
-```
-┌─────────────────────────────────────────────┐
-│  1. CSPM (Cloud Security Posture Mgmt)      │
-│     クラウド設定の監視                       │
-└─────────────────────────────────────────────┘
-┌─────────────────────────────────────────────┐
-│  2. CWPP (Cloud Workload Protection)        │
-│     ワークロードの保護 ← **Falcoはここ**    │
-└─────────────────────────────────────────────┘
-┌─────────────────────────────────────────────┐
-│  3. CIEM (Cloud Infra Entitlement Mgmt)     │
-│     アクセス権限の管理                       │
-└─────────────────────────────────────────────┘
-┌─────────────────────────────────────────────┐
-│  4. Vulnerability Management                │
-│     脆弱性スキャン                           │
-└─────────────────────────────────────────────┘
-┌─────────────────────────────────────────────┐
-│  5. Threat Detection                        │
-│     脅威インテリジェンス                     │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    P1["1. CSPM (Cloud Security Posture Mgmt)<br/>クラウド設定の監視"]
+    P2["2. CWPP (Cloud Workload Protection)<br/>ワークロードの保護 ← Falcoはここ"]
+    P3["3. CIEM (Cloud Infra Entitlement Mgmt)<br/>アクセス権限の管理"]
+    P4["4. Vulnerability Management<br/>脆弱性スキャン"]
+    P5["5. Threat Detection<br/>脅威インテリジェンス"]
 ```
 
 ### FalcoのCNAPPにおける位置づけ
@@ -1008,10 +935,10 @@ Falcoは**CWPP（Cloud Workload Protection）**の中核を担います。
 **統合例：TrivyとFalcoの連携**
 
 ```yaml
-# 1. Trivyでイメージスキャン
+# Trivyでイメージスキャン
 trivy image myapp:latest --format json > vulnerabilities.json
 
-# 2. 高リスク脆弱性を持つイメージを監視するFalcoルールを自動生成
+# 高リスク脆弱性を持つイメージを監視するFalcoルールを自動生成
 - rule: High Risk CVE Image Running
   desc: 高リスクCVEを含むイメージが実行中
   condition: >
@@ -1025,17 +952,15 @@ trivy image myapp:latest --format json > vulnerabilities.json
 
 **理想的なアーキテクチャ**：
 
-```
-┌──────────────────────────────────────────────────────┐
-│               Central Security Platform              │
-│  (SIEM: Splunk / Elasticsearch / DataDog)            │
-└────────▲─────────────▲─────────────▲────────────────┘
-         │             │             │
-         │             │             │
-┌────────┴─────┐ ┌────┴────┐ ┌─────┴──────┐
-│ CSPM Alerts  │ │ Falco   │ │ Trivy Scan │
-│ (Prowler)    │ │ Runtime │ │ Results    │
-└──────────────┘ └─────────┘ └────────────┘
+```mermaid
+flowchart BT
+    CSPM["CSPM Alerts<br/>(Prowler)"]
+    Falco["Falco<br/>Runtime"]
+    Trivy["Trivy Scan<br/>Results"]
+    Central["Central Security Platform<br/>(SIEM: Splunk / Elasticsearch / DataDog)"]
+    CSPM --> Central
+    Falco --> Central
+    Trivy --> Central
 ```
 
 ---
@@ -1093,15 +1018,16 @@ git clone https://github.com/falcosecurity/falco-website
 
 #### 1. マルチプラットフォーム対応
 
-```
-現在: Linux専用
-  ↓
-将来: Windows / macOS / Cloud Functions対応
+```mermaid
+flowchart TD
+    A["現在: Linux専用"]
+    B["将来: Windows / macOS / Cloud Functions対応"]
+    A --> B
 ```
 
 #### 2. AI/ML統合
 
-```
+```text
 - 異常検知の自動化
 - ルールの自動生成
 - False Positiveの自動削減
@@ -1109,16 +1035,16 @@ git clone https://github.com/falcosecurity/falco-website
 
 #### 3. Enforcement機能
 
-```
-現在: Detection（検知）のみ
-  ↓
-将来: Prevention（防止）機能の追加検討
-  （Tetragonとの統合？）
+```mermaid
+flowchart TD
+    A["現在: Detection（検知）のみ"]
+    B["将来: Prevention（防止）機能の追加検討<br/>（Tetragonとの統合？）"]
+    A --> B
 ```
 
 #### 4. より強力なPlugin Ecosystem
 
-```
+```text
 - SaaS連携の拡充（Okta, Salesforce, Microsoft 365）
 - IoT/Edge対応
 - カスタムプロトコルサポート
@@ -1200,21 +1126,22 @@ git clone https://github.com/falcosecurity/falco-website
 
 **多層防御の考え方**：
 
-```
-イメージスキャン（Trivy）
-    +
-Admission Control（Gatekeeper/Kyverno）
-    +
-Runtime Security（Falco）
-    +
-Network Policy（Cilium）
-    =
-強固なKubernetesセキュリティ
+```mermaid
+flowchart TD
+    A["イメージスキャン（Trivy）"]
+    B["Admission Control（Gatekeeper/Kyverno）"]
+    C["Runtime Security（Falco）"]
+    D["Network Policy（Cilium）"]
+    E["強固なKubernetesセキュリティ"]
+    A -->|"+"| E
+    B -->|"+"| E
+    C -->|"+"| E
+    D -->|"+"| E
 ```
 
 Falcoは、クラウドネイティブセキュリティの重要な一部です。この連載で学んだ知識を活かして、皆さんの環境のセキュリティ向上に役立てていただければ幸いです。
 
-**Happy Securing with Falco! 🛡️**
+**Happy Securing with Falco! **
 
 ---
 

@@ -27,16 +27,14 @@ title: "第9回：本番環境にFalcoを入れる時の設計"
 
 **推奨される導入ステップ**：
 
-```
-Phase 0: 開発環境での検証（1-2週間）
-  ↓
-Phase 1: ステージング環境でのパイロット運用（2-4週間）
-  ↓
-Phase 2: 本番環境の一部クラスタ（Canary展開、1-2週間）
-  ↓
-Phase 3: 本番環境の全クラスタ（段階的展開、2-4週間）
-  ↓
-Phase 4: 継続的な改善とチューニング（常時）
+```mermaid
+flowchart TD
+    P0["Phase 0: 開発環境での検証（1-2週間）"]
+    P1["Phase 1: ステージング環境でのパイロット運用（2-4週間）"]
+    P2["Phase 2: 本番環境の一部クラスタ（Canary展開、1-2週間）"]
+    P3["Phase 3: 本番環境の全クラスタ（段階的展開、2-4週間）"]
+    P4["Phase 4: 継続的な改善とチューニング（常時）"]
+    P0 --> P1 --> P2 --> P3 --> P4
 ```
 
 各フェーズで以下を確認：
@@ -138,7 +136,7 @@ resources:
 
 **実測データ例（本番環境）**：
 
-```
+```text
 環境: GKE クラスタ（100ノード、各ノード50 Pod平均）
 ドライバー: eBPF
 有効ルール数: 約120ルール
@@ -238,7 +236,7 @@ kubectl scale daemonset falco --replicas=0 -n falco
 
 **実測結果例**：
 
-```
+```text
 環境: EKS m5.2xlarge ノード
 ワークロード: Nginx (100 req/sec)
 
@@ -344,14 +342,13 @@ GET /falco-*/_search
 
 **ルールの優先度別ロールアウト**：
 
-```
-Week 1: CRITICAL のみ有効化
-  ↓
-Week 2: CRITICAL + ERROR
-  ↓
-Week 3: CRITICAL + ERROR + WARNING（一部）
-  ↓
-Week 4: 全ルール有効化 + 継続的調整
+```mermaid
+flowchart TD
+    W1["Week 1: CRITICAL のみ有効化"]
+    W2["Week 2: CRITICAL + ERROR"]
+    W3["Week 3: CRITICAL + ERROR + WARNING（一部）"]
+    W4["Week 4: 全ルール有効化 + 継続的調整"]
+    W1 --> W2 --> W3 --> W4
 ```
 
 **優先度ベースのフィルタリング**：
@@ -365,7 +362,7 @@ priority: ERROR  # WARNING以下は無視
 
 #### アラート疲れの指標
 
-```
+```text
 1. 1日あたりのアラート数 > 100件 → ノイズが多すぎる
 2. 同じルールが1時間に10回以上 → 例外設定が必要
 3. アラート対応率 < 30% → 優先度の見直しが必要
@@ -544,14 +541,15 @@ config:
 
 #### PagerDutyエスカレーションポリシー例
 
-```
-Level 1: プライマリオンコール（即座）
-  ↓ 15分後に応答なし
-Level 2: セカンダリオンコール（15分後）
-  ↓ 30分後に応答なし
-Level 3: セキュリティマネージャー（45分後）
-  ↓ 1時間後に応答なし
-Level 4: CTO/CISO（1時間15分後）
+```mermaid
+flowchart TD
+    L1["Level 1: プライマリオンコール（即座）"]
+    L2["Level 2: セカンダリオンコール（15分後）"]
+    L3["Level 3: セキュリティマネージャー（45分後）"]
+    L4["Level 4: CTO/CISO（1時間15分後）"]
+    L1 -->|"15分後に応答なし"| L2
+    L2 -->|"30分後に応答なし"| L3
+    L3 -->|"1時間後に応答なし"| L4
 ```
 
 ### ランブックの作成
@@ -568,7 +566,7 @@ Level 4: CTO/CISO（1時間15分後）
 
 ## 初動対応（5分以内）
 
-### 1. 状況確認
+### 状況確認
 ```bash
 # アラート詳細を確認
 kubectl get pod <POD_NAME> -n <NAMESPACE> -o yaml | grep -A 5 securityContext
@@ -577,7 +575,7 @@ kubectl get pod <POD_NAME> -n <NAMESPACE> -o yaml | grep -A 5 securityContext
 kubectl describe pod <POD_NAME> -n <NAMESPACE>
 ```
 
-### 2. 緊急性の判断
+### 緊急性の判断
 - [ ] 既知の例外か？ → 例外リストを確認
 - [ ] 正規のデプロイか？ → GitHubのデプロイ履歴を確認
 - [ ] 攻撃の可能性は？ → 以下の兆候をチェック
@@ -585,7 +583,7 @@ kubectl describe pod <POD_NAME> -n <NAMESPACE>
   - 不審なイメージ名
   - 不明なユーザーによるデプロイ
 
-### 3. 封じ込め（必要に応じて）
+### 封じ込め（必要に応じて）
 ```bash
 # Podの即時削除
 kubectl delete pod <POD_NAME> -n <NAMESPACE> --force --grace-period=0
@@ -596,13 +594,13 @@ kubectl label namespace <NAMESPACE> network-policy=isolated
 
 ## 詳細調査（30分以内）
 
-### 1. 誰がデプロイしたか
+### 誰がデプロイしたか
 ```bash
 # Audit Logから確認
 kubectl get events --all-namespaces --sort-by='.lastTimestamp' | grep <POD_NAME>
 ```
 
-### 2. コンテナ内部の確認（安全な環境で）
+### コンテナ内部の確認（安全な環境で）
 ```bash
 # イメージの検査
 docker pull <IMAGE>
@@ -610,7 +608,7 @@ docker history <IMAGE>
 docker run --rm -it <IMAGE> /bin/sh
 ```
 
-### 3. 影響範囲の特定
+### 影響範囲の特定
 ```bash
 # 同じイメージを使用している他のPod
 kubectl get pods --all-namespaces -o json | jq '.items[] | select(.spec.containers[].image=="<IMAGE>")'
@@ -628,7 +626,6 @@ kubectl get pods --all-namespaces -o json | jq '.items[] | select(.spec.containe
 - [ ] ポストモーテム実施（必要に応じて）
 - [ ] ルールまたは例外の更新
 - [ ] 再発防止策の実施
-```
 
 ### エスカレーションフロー
 
@@ -660,14 +657,14 @@ config:
 #### セットアップ
 
 ```bash
-# 1. EKS クラスタ情報確認
+# EKS クラスタ情報確認
 aws eks describe-cluster --name my-cluster --region us-west-2
 
-# 2. Helm インストール
+# Helm インストール
 helm repo add falcosecurity https://falcosecurity.github.io/charts
 helm repo update
 
-# 3. EKS 専用設定でインストール
+# EKS 専用設定でインストール
 helm install falco falcosecurity/falco \
   --namespace falco --create-namespace \
   --set driver.kind=ebpf \
@@ -720,10 +717,10 @@ aws eks update-cluster-config \
 #### セットアップ
 
 ```bash
-# 1. GKE クラスタ情報確認
+# GKE クラスタ情報確認
 gcloud container clusters describe my-cluster --region us-central1
 
-# 2. COS (Container-Optimized OS) 対応
+# COS (Container-Optimized OS) 対応
 helm install falco falcosecurity/falco \
   --namespace falco --create-namespace \
   --set driver.kind=ebpf \
@@ -772,10 +769,10 @@ gcloud logging sinks create falco-audit \
 #### セットアップ
 
 ```bash
-# 1. AKS クラスタ情報確認
+# AKS クラスタ情報確認
 az aks show --resource-group myResourceGroup --name myAKSCluster
 
-# 2. AKS 用インストール
+# AKS 用インストール
 helm install falco falcosecurity/falco \
   --namespace falco --create-namespace \
   --set driver.kind=ebpf \
@@ -859,24 +856,32 @@ driver:
 
 **アーキテクチャ例**：
 
-```
-┌─────────────────────────────────────────────────────┐
-│              Central Monitoring                      │
-│  ┌────────────┐  ┌────────────┐  ┌──────────────┐  │
-│  │Elasticsearch│  │  Grafana   │  │ Falco UI     │  │
-│  └──────▲─────┘  └──────▲─────┘  └──────▲───────┘  │
-│         │                │                │          │
-└─────────┼────────────────┼────────────────┼──────────┘
-          │                │                │
-    ┌─────┴────────────────┴────────────────┴─────┐
-    │           Message Bus (Kafka/Kinesis)        │
-    └─────┬────────────────┬────────────────┬──────┘
-          │                │                │
-┌─────────▼─────┐ ┌────────▼────┐ ┌────────▼─────┐
-│ Cluster A     │ │ Cluster B    │ │ Cluster C    │
-│  - Falco      │ │  - Falco     │ │  - Falco     │
-│  - Falcosidekick│ │  - Falcosidekick│ │  - Falcosidekick│
-└───────────────┘ └──────────────┘ └──────────────┘
+```mermaid
+flowchart TD
+    subgraph Central["Central Monitoring"]
+        ES["Elasticsearch"]
+        Grafana["Grafana"]
+        UI["Falco UI"]
+    end
+    Bus["Message Bus (Kafka/Kinesis)"]
+    subgraph ClusterA["Cluster A"]
+        A1["Falco"]
+        A2["Falcosidekick"]
+    end
+    subgraph ClusterB["Cluster B"]
+        B1["Falco"]
+        B2["Falcosidekick"]
+    end
+    subgraph ClusterC["Cluster C"]
+        C1["Falco"]
+        C2["Falcosidekick"]
+    end
+    ClusterA --> Bus
+    ClusterB --> Bus
+    ClusterC --> Bus
+    Bus --> ES
+    Bus --> Grafana
+    Bus --> UI
 ```
 
 #### 実装例（Kafka経由）
@@ -903,26 +908,15 @@ config:
 
 **GitOps によるポリシー配布**：
 
-```
-┌─────────────────────────────────────────────┐
-│         GitHub Repository                    │
-│  ├── base/                                   │
-│  │   ├── falco-rules.yaml  (共通ルール)     │
-│  │   └── kustomization.yaml                 │
-│  ├── overlays/                               │
-│  │   ├── production/                         │
-│  │   │   ├── falco-rules-prod.yaml          │
-│  │   │   └── kustomization.yaml             │
-│  │   └── staging/                            │
-│  │       ├── falco-rules-staging.yaml       │
-│  │       └── kustomization.yaml             │
-└─────────────────────────────────────────────┘
-          │
-          │ (Flux CD / ArgoCD)
-          ▼
-┌─────────────────────────────────────────────┐
-│     複数クラスタへ自動デプロイ               │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Repo["GitHub Repository"]
+        Base["base/<br/>falco-rules.yaml (共通ルール)<br/>kustomization.yaml"]
+        Prod["overlays/production/<br/>falco-rules-prod.yaml<br/>kustomization.yaml"]
+        Staging["overlays/staging/<br/>falco-rules-staging.yaml<br/>kustomization.yaml"]
+    end
+    Deploy["複数クラスタへ自動デプロイ"]
+    Repo -->|"Flux CD / ArgoCD"| Deploy
 ```
 
 #### Kustomize設定例
@@ -947,7 +941,7 @@ patchesStrategicMerge:
 
 **イベント量の見積もり**：
 
-```
+```text
 1クラスタあたり:
 - ノード数: 100
 - Pod数: 5,000
@@ -1139,7 +1133,7 @@ config:
 
 **本番環境での成功の鍵**：
 
-```
+```text
 技術的な正確性 × チーム間の調整 × 継続的な改善 = 成功する運用
 ```
 

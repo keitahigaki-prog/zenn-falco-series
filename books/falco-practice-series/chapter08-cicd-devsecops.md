@@ -20,65 +20,49 @@ title: "第8回：Falco + CI/CD / DevSecOpsシナリオ"
 
 ---
 
-## 1. DevSecOpsパイプラインとセキュリティ
+## DevSecOpsパイプラインとセキュリティ
 
 ### 1.1 Shift Leftの考え方
 
 **Shift Left** = セキュリティチェックを左側（開発初期）にシフトする
 
-```
-従来のアプローチ（遅すぎる）:
-開発 → ビルド → テスト → デプロイ → 🚨本番で脆弱性発見
-
-DevSecOpsアプローチ（早期発見）:
-🔍開発 → 🔍ビルド → 🔍テスト → 🔍デプロイ → 🛡️本番監視
+```mermaid
+flowchart LR
+    subgraph trad["従来のアプローチ（遅すぎる）"]
+        direction LR
+        T1["開発"] --> T2["ビルド"] --> T3["テスト"] --> T4["デプロイ"] --> T5["[!]本番で脆弱性発見"]
+    end
+    subgraph devsec["DevSecOpsアプローチ（早期発見）"]
+        direction LR
+        D1["[?]開発"] --> D2["[?]ビルド"] --> D3["[?]テスト"] --> D4["[?]デプロイ"] --> D5["本番監視"]
+    end
 ```
 
 しかし、**Shift Leftだけでは不十分**です：
 
-- ✅ **静的解析**（開発時）：既知の脆弱性を検出
-- ✅ **コンテナスキャン**（ビルド時）：イメージの脆弱性を検出
-- ❌ **ランタイム攻撃**：実行時の異常な動作は検出できない
+- [OK] **静的解析**（開発時）：既知の脆弱性を検出
+- [OK] **コンテナスキャン**（ビルド時）：イメージの脆弱性を検出
+- [NG] **ランタイム攻撃**：実行時の異常な動作は検出できない
 
 ### 1.2 ランタイムセキュリティの位置づけ
 
-```
-┌────────────────────────────────────────────────────┐
-│         DevSecOps セキュリティレイヤー              │
-├────────────────────────────────────────────────────┤
-│                                                    │
-│ 1️⃣ コード品質（SAST）                              │
-│    → SonarQube, Snyk Code                         │
-│    検出：SQLインジェクション、XSS等のコード脆弱性   │
-│                                                    │
-│ 2️⃣ 依存関係スキャン（SCA）                         │
-│    → Dependabot, Renovate                         │
-│    検出：古いライブラリ、既知のCVE                  │
-│                                                    │
-│ 3️⃣ コンテナイメージスキャン                        │
-│    → Trivy, Grype, Snyk Container                 │
-│    検出：ベースイメージの脆弱性                     │
-│                                                    │
-│ 4️⃣ イメージ署名・検証                             │
-│    → Cosign, Notary                               │
-│    検出：改ざんされたイメージ                       │
-│                                                    │
-│ 5️⃣ ポリシーエンジン（Admission Control）          │
-│    → OPA Gatekeeper, Kyverno                      │
-│    検出：ポリシー違反のマニフェスト                │
-│                                                    │
-│ 6️⃣ ランタイム検知（Runtime Security）  ⬅️ Falco  │
-│    → Falco                                        │
-│    検出：実行時の異常な動作、攻撃パターン           │
-│                                                    │
-└────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    title["DevSecOps セキュリティレイヤー"]
+    L1["1. コード品質（SAST）<br>→ SonarQube, Snyk Code<br>検出：SQLインジェクション、XSS等のコード脆弱性"]
+    L2["2. 依存関係スキャン（SCA）<br>→ Dependabot, Renovate<br>検出：古いライブラリ、既知のCVE"]
+    L3["3. コンテナイメージスキャン<br>→ Trivy, Grype, Snyk Container<br>検出：ベースイメージの脆弱性"]
+    L4["4. イメージ署名・検証<br>→ Cosign, Notary<br>検出：改ざんされたイメージ"]
+    L5["5. ポリシーエンジン（Admission Control）<br>→ OPA Gatekeeper, Kyverno<br>検出：ポリシー違反のマニフェスト"]
+    L6["6. ランタイム検知（Runtime Security） ← Falco<br>→ Falco<br>検出：実行時の異常な動作、攻撃パターン"]
+    title --> L1 --> L2 --> L3 --> L4 --> L5 --> L6
 ```
 
 **Falcoの強み**：
 
-- ✅ 他のツールが検出できない**実行時の攻撃**を検知
-- ✅ **ゼロデイ攻撃**（既知の脆弱性DBにない攻撃）も動作で検知
-- ✅ **内部犯行**（認証された攻撃者の異常動作）を検知
+- [OK] 他のツールが検出できない**実行時の攻撃**を検知
+- [OK] **ゼロデイ攻撃**（既知の脆弱性DBにない攻撃）も動作で検知
+- [OK] **内部犯行**（認証された攻撃者の異常動作）を検知
 
 ### 1.3 DevSecOpsパイプラインの全体像
 
@@ -92,7 +76,7 @@ on:
   pull_request:
 
 jobs:
-  # 1️⃣ コード品質チェック
+  # 1. コード品質チェック
   code-quality:
     runs-on: ubuntu-latest
     steps:
@@ -100,7 +84,7 @@ jobs:
       - name: Run SonarQube
         uses: sonarsource/sonarcloud-github-action@master
 
-  # 2️⃣ 依存関係スキャン
+  # 2. 依存関係スキャン
   dependency-scan:
     runs-on: ubuntu-latest
     steps:
@@ -108,7 +92,7 @@ jobs:
       - name: Run Snyk
         uses: snyk/actions/node@master
 
-  # 3️⃣ コンテナイメージスキャン
+  # 3. コンテナイメージスキャン
   image-scan:
     runs-on: ubuntu-latest
     steps:
@@ -121,7 +105,7 @@ jobs:
           image-ref: myapp:${{ github.sha }}
           severity: 'CRITICAL,HIGH'
 
-  # 4️⃣ イメージ署名
+  # 4. イメージ署名
   image-sign:
     needs: image-scan
     runs-on: ubuntu-latest
@@ -130,14 +114,14 @@ jobs:
         run: |
           cosign sign --key cosign.key myapp:${{ github.sha }}
 
-  # 5️⃣ ポリシーチェック
+  # 5. ポリシーチェック
   policy-check:
     runs-on: ubuntu-latest
     steps:
       - name: Run OPA Conftest
         run: conftest test k8s-manifests/ --policy policy/
 
-  # 6️⃣ テスト環境デプロイ + Falco監視
+  # 6. テスト環境デプロイ + Falco監視
   test-deploy:
     needs: [image-scan, policy-check]
     runs-on: ubuntu-latest
@@ -156,7 +140,7 @@ jobs:
             exit 1
           fi
 
-  # 7️⃣ 本番デプロイ
+  # 7. 本番デプロイ
   production-deploy:
     needs: test-deploy
     runs-on: ubuntu-latest
@@ -168,7 +152,7 @@ jobs:
 
 ---
 
-## 2. CI/CDパイプラインへのFalco統合
+## CI/CDパイプラインへのFalco統合
 
 ### 2.1 GitHub Actions での統合
 
@@ -228,16 +212,16 @@ jobs:
 
           # 期待されるアラートが出ているか確認
           if ! grep -q "Shell spawned in container" falco-alerts.json; then
-            echo "❌ Expected alert not found: Shell spawned"
+            echo "[NG] Expected alert not found: Shell spawned"
             exit 1
           fi
 
           if ! grep -q "Read sensitive file" falco-alerts.json; then
-            echo "❌ Expected alert not found: Sensitive file read"
+            echo "[NG] Expected alert not found: Sensitive file read"
             exit 1
           fi
 
-          echo "✅ All expected alerts detected by Falco"
+          echo "[OK] All expected alerts detected by Falco"
 
       # 6. アラートをアーティファクトとして保存
       - name: Upload Falco alerts
@@ -295,12 +279,12 @@ falco-runtime-test:
 
       # CRITICALアラートがあれば失敗
       if grep -q "CRITICAL" falco-test-alerts.log; then
-        echo "🚨 CRITICAL security alerts detected"
+        echo "[!] CRITICAL security alerts detected"
         cat falco-test-alerts.log
         exit 1
       fi
 
-      echo "✅ No critical security issues detected"
+      echo "[OK] No critical security issues detected"
   artifacts:
     paths:
       - falco-test-alerts.log
@@ -322,99 +306,99 @@ deploy-production:
 ```groovy
 // Jenkinsfile
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        IMAGE_NAME = "myapp"
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
-        KUBECONFIG = credentials('kubeconfig-test')
+  environment {
+    IMAGE_NAME = "myapp"
+    IMAGE_TAG  = "${env.BUILD_NUMBER}"
+    KUBECONFIG = credentials('kubeconfig-test')
+  }
+
+  stages {
+    stage('Build') {
+      steps {
+        script {
+          docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+        }
+      }
     }
 
-    stages {
-        stage('Build') {
-            steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                }
-            }
-        }
-
-        stage('Trivy Scan') {
-            steps {
-                sh """
-                    trivy image --exit-code 1 --severity CRITICAL ${IMAGE_NAME}:${IMAGE_TAG}
-                """
-            }
-        }
-
-        stage('Deploy to Test') {
-            steps {
-                sh """
-                    kubectl apply -f k8s/test/ --namespace=test
-                    kubectl set image deployment/myapp myapp=${IMAGE_NAME}:${IMAGE_TAG} -n test
-                """
-            }
-        }
-
-        stage('Falco Security Test') {
-            steps {
-                script {
-                    sh """
-                        # アプリケーション起動待機
-                        kubectl wait --for=condition=ready pod -l app=myapp -n test --timeout=120s
-
-                        # セキュリティテスト実行
-                        ./tests/run-security-tests.sh
-
-                        # Falcoログを取得
-                        kubectl logs -n falco -l app=falco --since=5m > falco-alerts.log
-
-                        # アラート分析
-                        python3 scripts/analyze-falco-alerts.py falco-alerts.log
-                    """
-
-                    // アラートがあれば通知
-                    def alertCount = sh(
-                        script: "grep -c 'Priority: ERROR\\|Priority: CRITICAL' falco-alerts.log || true",
-                        returnStdout: true
-                    ).trim()
-
-                    if (alertCount.toInteger() > 0) {
-                        slackSend(
-                            color: 'danger',
-                            message: "🚨 Falco detected ${alertCount} security alerts in build ${env.BUILD_NUMBER}"
-                        )
-                        error("Security alerts detected by Falco")
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Production') {
-            when {
-                branch 'main'
-            }
-            steps {
-                input message: 'Deploy to production?', ok: 'Deploy'
-                sh """
-                    kubectl apply -f k8s/prod/ --namespace=production
-                    kubectl set image deployment/myapp myapp=${IMAGE_NAME}:${IMAGE_TAG} -n production
-                """
-            }
-        }
+    stage('Trivy Scan') {
+      steps {
+        sh """
+          trivy image --exit-code 1 \
+            --severity CRITICAL \
+            ${IMAGE_NAME}:${IMAGE_TAG}
+        """
+      }
     }
 
-    post {
-        always {
-            archiveArtifacts artifacts: 'falco-alerts.log', allowEmptyArchive: true
-        }
+    stage('Deploy to Test') {
+      steps {
+        sh """
+          kubectl apply -f k8s/test/ --namespace=test
+          kubectl set image deployment/myapp \
+            myapp=${IMAGE_NAME}:${IMAGE_TAG} -n test
+        """
+      }
     }
+
+    stage('Falco Security Test') {
+      steps {
+        script {
+          sh """
+            kubectl wait --for=condition=ready \
+              pod -l app=myapp -n test --timeout=120s
+            ./tests/run-security-tests.sh
+            kubectl logs -n falco -l app=falco \
+              --since=5m > falco-alerts.log
+            python3 scripts/analyze-falco-alerts.py \
+              falco-alerts.log
+          """
+
+          def alertCount = sh(
+            script: "grep -c 'Priority: ERROR\\|Priority: CRITICAL'" +
+                    " falco-alerts.log || true",
+            returnStdout: true
+          ).trim()
+
+          if (alertCount.toInteger() > 0) {
+            slackSend(
+              color: 'danger',
+              message: "[!] Falco detected ${alertCount}" +
+                       " security alerts in build ${env.BUILD_NUMBER}"
+            )
+            error("Security alerts detected by Falco")
+          }
+        }
+      }
+    }
+
+    stage('Deploy to Production') {
+      when { branch 'main' }
+      steps {
+        input message: 'Deploy to production?', ok: 'Deploy'
+        sh """
+          kubectl apply -f k8s/prod/ --namespace=production
+          kubectl set image deployment/myapp \
+            myapp=${IMAGE_NAME}:${IMAGE_TAG} -n production
+        """
+      }
+    }
+  }
+
+  post {
+    always {
+      archiveArtifacts artifacts: 'falco-alerts.log',
+                       allowEmptyArchive: true
+    }
+  }
 }
 ```
 
 ---
 
-## 3. ランタイム検知 vs イメージ署名
+## ランタイム検知 vs イメージ署名
 
 ### 3.1 それぞれの役割
 
@@ -427,28 +411,28 @@ pipeline {
 
 **シナリオ1：悪意あるイメージの混入**
 
-```
+```text
 攻撃：開発者のアカウントが侵害され、バックドア入りイメージがPushされた
 
-✅ イメージ署名で防御:
+[OK] イメージ署名で防御:
    - 署名されていないイメージはAdmission Webhookでブロック
    - デプロイ前に阻止
 
-❌ Falcoだけでは:
+[NG] Falcoだけでは:
    - イメージがデプロイされてから検知
    - バックドアが実行されてから気づく（遅い）
 ```
 
 **シナリオ2：実行時の権限昇格攻撃**
 
-```
+```text
 攻撃：正規イメージだが、脆弱性を突いてシェルを取得し、権限昇格
 
-❌ イメージ署名では防御不可:
+[NG] イメージ署名では防御不可:
    - イメージ自体は正規（署名済み）
    - 実行時の攻撃は署名では検出できない
 
-✅ Falcoで検知:
+[OK] Falcoで検知:
    - コンテナ内でのシェル実行を検知
    - /etc/shadow へのアクセスを検知
    - 権限昇格の動作を検知
@@ -538,7 +522,7 @@ jobs:
 
 ---
 
-## 4. Policy as Code - Falcoルールの管理
+## Policy as Code - Falcoルールの管理
 
 ### 4.1 Gitでのルール管理
 
@@ -671,7 +655,7 @@ helm upgrade falco falcosecurity/falco \
 
 ---
 
-## 5. GitOpsとの統合
+## GitOpsとの統合
 
 ### 5.1 Flux CD との統合
 
@@ -786,30 +770,30 @@ spec:
 ┌─────────────────────────────────────────┐
 │ ArgoCD - Falco Application              │
 ├─────────────────────────────────────────┤
-│ Status: ✅ Synced (Healthy)             │
+│ Status: [OK] Synced (Healthy)             │
 │ Revision: abc123 (main)                 │
 │                                         │
 │ Resources:                              │
-│ ✅ DaemonSet/falco (3/3 Ready)          │
-│ ✅ ConfigMap/falco-rules (Updated 2m)   │
-│ ✅ Service/falco                        │
-│ ✅ ServiceMonitor/falco                 │
+│ [OK] DaemonSet/falco (3/3 Ready)          │
+│ [OK] ConfigMap/falco-rules (Updated 2m)   │
+│ [OK] Service/falco                        │
+│ [OK] ServiceMonitor/falco                 │
 │                                         │
 │ Recent Syncs:                           │
-│ • 2025-01-26 15:30 - Rules updated      │
-│ • 2025-01-25 10:15 - Version upgrade    │
+│ - 2025-01-26 15:30 - Rules updated      │
+│ - 2025-01-25 10:15 - Version upgrade    │
 └─────────────────────────────────────────┘
 ```
 
 ---
 
-## 6. Infrastructure as Code と Drift Detection
+## Infrastructure as Code と Drift Detection
 
 ### 6.1 IaCにおけるセキュリティ課題
 
 **問題**：Terraform/Pulumi等で管理していても、手動変更でDrift（逸脱）が発生
 
-```
+```text
 # Terraform で定義
 resource "kubernetes_namespace" "production" {
   metadata {
@@ -893,7 +877,7 @@ kubectl apply -f some-deployment.yaml -n production
 
 ---
 
-## 7. 実践：完全なDevSecOpsパイプライン構築
+## 実践：完全なDevSecOpsパイプライン構築
 
 ### シナリオ：決済システムのセキュアなデプロイ
 
@@ -993,7 +977,7 @@ jobs:
             grep "payment-system" > falco-dev.log || true
 
           if grep -q "CRITICAL" falco-dev.log; then
-            echo "🚨 CRITICAL alerts in dev"
+            echo "[!] CRITICAL alerts in dev"
             cat falco-dev.log
             exit 1
           fi
@@ -1051,7 +1035,7 @@ jobs:
             grep "payment-system-green" > falco-green.log
 
           if grep -q "CRITICAL\\|ERROR" falco-green.log; then
-            echo "🚨 Security issues detected in Green slot"
+            echo "[!] Security issues detected in Green slot"
             kubectl delete deployment payment-system-green -n production
             exit 1
           fi
@@ -1078,8 +1062,8 @@ jobs:
     steps:
       - name: Setup Falco Dashboard Link
         run: |
-          echo "📊 Falco Dashboard: https://falco-ui.example.com"
-          echo "📈 Grafana: https://grafana.example.com/d/falco-prod"
+          echo " Falco Dashboard: https://falco-ui.example.com"
+          echo " Grafana: https://grafana.example.com/d/falco-prod"
 
       - name: Configure alert escalation
         run: |
@@ -1091,30 +1075,32 @@ jobs:
 
 ---
 
-## 8. まとめ
+## まとめ
 
 この章では、CI/CDとDevSecOpsにおけるFalcoの活用方法を学びました。
 
 ### 学んだこと
 
-✅ **DevSecOpsパイプライン** - Shift Leftとランタイムセキュリティの統合
-✅ **CI/CD統合** - GitHub Actions/GitLab CI/Jenkins での実装
-✅ **イメージセキュリティ** - Cosign署名とFalco検知の相互補完
-✅ **Policy as Code** - Falcoルールのバージョン管理とテスト
-✅ **GitOps** - Flux/ArgoCDとの連携
-✅ **Drift Detection** - IaCからの逸脱検知とアラート
+[OK] **DevSecOpsパイプライン** - Shift Leftとランタイムセキュリティの統合
+[OK] **CI/CD統合** - GitHub Actions/GitLab CI/Jenkins での実装
+[OK] **イメージセキュリティ** - Cosign署名とFalco検知の相互補完
+[OK] **Policy as Code** - Falcoルールのバージョン管理とテスト
+[OK] **GitOps** - Flux/ArgoCDとの連携
+[OK] **Drift Detection** - IaCからの逸脱検知とアラート
 
 ### セキュリティの多層防御
 
-```
-完全なDevSecOpsセキュリティ:
-1. SAST（静的解析） → コード脆弱性
-2. SCA（依存関係スキャン） → ライブラリCVE
-3. コンテナスキャン → イメージ脆弱性
-4. イメージ署名 → サプライチェーン保護
-5. Admission Control → ポリシー違反
-6. Falco（ランタイム） → 実行時攻撃 ⬅️ 最後の砦
-7. Drift Detection → 設定逸脱
+```mermaid
+flowchart TD
+    title["完全なDevSecOpsセキュリティ"]
+    S1["1. SAST（静的解析）"] -->|"コード脆弱性"| S2["2. SCA（依存関係スキャン）"]
+    S2 -->|"ライブラリCVE"| S3["3. コンテナスキャン"]
+    S3 -->|"イメージ脆弱性"| S4["4. イメージ署名"]
+    S4 -->|"サプライチェーン保護"| S5["5. Admission Control"]
+    S5 -->|"ポリシー違反"| S6["6. Falco（ランタイム） ← 最後の砦"]
+    S6 -->|"実行時攻撃"| S7["7. Drift Detection"]
+    S7 -->|"設定逸脱"| done["全レイヤー防御"]
+    title --> S1
 ```
 
 ### ベストプラクティス

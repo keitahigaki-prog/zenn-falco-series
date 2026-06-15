@@ -24,7 +24,7 @@ title: "第6回：Falcosidekick / UI可視化を入れてみる"
 
 ---
 
-## 1. Falcosidekickとは
+## Falcosidekickとは
 
 ### 1.1 Falco単体の問題点
 
@@ -38,79 +38,61 @@ Falcoはデフォルトでは、検知したイベントを**標準出力**に�
 
 **問題**：
 
-- ❌ ログは流れていってしまう（kubectl logsで見るしかない）
-- ❌ リアルタイム通知がない
-- ❌ 長期保存・検索できない
-- ❌ 統計分析・可視化できない
+- [NG] ログは流れていってしまう（kubectl logsで見るしかない）
+- [NG] リアルタイム通知がない
+- [NG] 長期保存・検索できない
+- [NG] 統計分析・可視化できない
 
 ### 1.2 Falcosidekickの役割
 
 Falcosidekickは、Falcoのイベントを受け取り、**60種類以上の外部サービス**に転送するハブです。
 
-```
-┌──────────┐
-│  Falco   │ Syscall/K8s Audit監視
-└────┬─────┘
-     │ gRPC/HTTP
-     ↓
-┌──────────────┐
-│ Falcosidekick │ イベントルーティング
-└──────┬───────┘
-       ├──→ Slack
-       ├──→ PagerDuty
-       ├──→ Elasticsearch
-       ├──→ Prometheus
-       ├──→ AWS SNS/SQS
-       ├──→ Azure Event Hub
-       └──→ 60+ outputs...
+```mermaid
+flowchart LR
+    Falco["Falco（Syscall/K8s Audit監視）"] -->|"gRPC/HTTP"| FSK["Falcosidekick（イベントルーティング）"]
+    FSK --> Slack["Slack"]
+    FSK --> PagerDuty["PagerDuty"]
+    FSK --> Elasticsearch["Elasticsearch"]
+    FSK --> Prometheus["Prometheus"]
+    FSK --> SNS["AWS SNS/SQS"]
+    FSK --> EventHub["Azure Event Hub"]
+    FSK --> More["60+ outputs..."]
 ```
 
 **解決できること**：
 
-- ✅ リアルタイム通知（Slack/Teams/PagerDuty）
-- ✅ 長期保存（Elasticsearch/Loki/S3）
-- ✅ メトリクス化（Prometheus）
-- ✅ 可視化（Grafana/Kibana）
-- ✅ 自動対応（Webhook/Lambda/Cloud Functions）
+- [OK] リアルタイム通知（Slack/Teams/PagerDuty）
+- [OK] 長期保存（Elasticsearch/Loki/S3）
+- [OK] メトリクス化（Prometheus）
+- [OK] 可視化（Grafana/Kibana）
+- [OK] 自動対応（Webhook/Lambda/Cloud Functions）
 
 ### 1.3 アーキテクチャ全体像
 
-```
-┌─────────────────────────────────────────────┐
-│           Kubernetes Cluster                │
-│                                             │
-│  ┌───────┐  ┌───────┐  ┌───────┐           │
-│  │ Pod 1 │  │ Pod 2 │  │ Pod 3 │           │
-│  └───┬───┘  └───┬───┘  └───┬───┘           │
-│      │ syscalls  │          │               │
-│      └───────────┼──────────┘               │
-│                  ↓                          │
-│         ┌─────────────────┐                 │
-│         │  Falco DaemonSet│                 │
-│         │  (各ノードで実行) │                 │
-│         └────────┬────────┘                 │
-│                  │ gRPC/HTTP                │
-│                  ↓                          │
-│         ┌─────────────────┐                 │
-│         │  Falcosidekick  │                 │
-│         │   (Deployment)  │                 │
-│         └────────┬────────┘                 │
-│                  │                          │
-│         ┌────────┴────────┐                 │
-│         │ Falcosidekick UI│ ←─ Webブラウザ   │
-│         └─────────────────┘                 │
-└─────────────────┬───────────────────────────┘
-                  │
-    ┌─────────────┼─────────────┐
-    ↓             ↓             ↓
-┌────────┐  ┌──────────┐  ┌──────────┐
-│ Slack  │  │Prometheus│  │ AWS SNS  │
-└────────┘  └──────────┘  └──────────┘
+```mermaid
+flowchart TD
+    subgraph Cluster["Kubernetes Cluster"]
+        Pod1["Pod 1"]
+        Pod2["Pod 2"]
+        Pod3["Pod 3"]
+        Falco["Falco DaemonSet（各ノードで実行）"]
+        FSK["Falcosidekick（Deployment）"]
+        UI["Falcosidekick UI"]
+        Pod1 -->|"syscalls"| Falco
+        Pod2 -->|"syscalls"| Falco
+        Pod3 -->|"syscalls"| Falco
+        Falco -->|"gRPC/HTTP"| FSK
+        FSK --> UI
+    end
+    Browser["Webブラウザ"] --> UI
+    FSK --> Slack["Slack"]
+    FSK --> Prometheus["Prometheus"]
+    FSK --> SNS["AWS SNS"]
 ```
 
 ---
 
-## 2. Falcosidekickのインストール
+## Falcosidekickのインストール
 
 ### 2.1 前提条件
 
@@ -205,7 +187,7 @@ kubectl get pods -n falco
 
 **期待される出力**：
 
-```
+```text
 NAME                                      READY   STATUS    RESTARTS   AGE
 falco-5zb8n                               2/2     Running   0          30s
 falco-9xc7k                               2/2     Running   0          30s
@@ -229,7 +211,7 @@ kubectl port-forward -n falco svc/falco-falcosidekick-ui 2802:2802
 
 ---
 
-## 3. 通知先の設定
+## 通知先の設定
 
 ### 3.1 Slack通知の設定
 
@@ -261,11 +243,11 @@ falcosidekick:
 
         {{ if .output_fields }}
         *Details*:
-        • User: {{ index .output_fields "user.name" | default "N/A" }}
-        • Command: {{ index .output_fields "proc.cmdline" | default "N/A" }}
-        • Container: {{ index .output_fields "container.name" | default "N/A" }}
-        • Pod: {{ index .output_fields "k8s.pod.name" | default "N/A" }}
-        • Namespace: {{ index .output_fields "k8s.ns.name" | default "N/A" }}
+        - User: {{ index .output_fields "user.name" | default "N/A" }}
+        - Command: {{ index .output_fields "proc.cmdline" | default "N/A" }}
+        - Container: {{ index .output_fields "container.name" | default "N/A" }}
+        - Pod: {{ index .output_fields "k8s.pod.name" | default "N/A" }}
+        - Namespace: {{ index .output_fields "k8s.ns.name" | default "N/A" }}
         {{ end }}
 
         *Full Output*:
@@ -379,19 +361,19 @@ falcosidekick:
 
 | 通知先 | ユースケース | 設定の複雑さ | リアルタイム性 |
 |--------|--------------|--------------|----------------|
-| **Slack** | チーム内通知、日常監視 | ⭐ 低 | 即時 |
-| **Teams** | Microsoft環境、企業内通知 | ⭐ 低 | 即時 |
-| **PagerDuty** | 24/7オンコール対応 | ⭐⭐ 中 | 即時 |
-| **Email** | 経営層への報告、監査 | ⭐ 低 | 即時〜数分 |
-| **Webhook** | カスタム統合、Lambda連携 | ⭐⭐ 中 | 即時 |
-| **AWS SNS/SQS** | AWS環境での自動対応 | ⭐⭐⭐ 高 | 即時 |
-| **Elasticsearch** | ログ検索、長期保存 | ⭐⭐⭐ 高 | 数秒 |
-| **Loki** | Grafana環境でのログ保存 | ⭐⭐ 中 | 数秒 |
-| **S3** | 長期アーカイブ、監査証跡 | ⭐⭐ 中 | 分単位 |
+| **Slack** | チーム内通知、日常監視 | ★ 低 | 即時 |
+| **Teams** | Microsoft環境、企業内通知 | ★ 低 | 即時 |
+| **PagerDuty** | 24/7オンコール対応 | ★★ 中 | 即時 |
+| **Email** | 経営層への報告、監査 | ★ 低 | 即時〜数分 |
+| **Webhook** | カスタム統合、Lambda連携 | ★★ 中 | 即時 |
+| **AWS SNS/SQS** | AWS環境での自動対応 | ★★★ 高 | 即時 |
+| **Elasticsearch** | ログ検索、長期保存 | ★★★ 高 | 数秒 |
+| **Loki** | Grafana環境でのログ保存 | ★★ 中 | 数秒 |
+| **S3** | 長期アーカイブ、監査証跡 | ★★ 中 | 分単位 |
 
 ---
 
-## 4. Falcosidekick UIの活用
+## Falcosidekick UIの活用
 
 ### 4.1 UIへのアクセス
 
@@ -431,23 +413,23 @@ kubectl get svc -n falco falco-falcosidekick-ui
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  Falcosidekick UI                    🔍 Search  │
+│  Falcosidekick UI                    [?] Search  │
 ├─────────────────────────────────────────────────┤
 │                                                 │
-│  📊 Statistics                                  │
+│   Statistics                                  │
 │  ┌───────────┬───────────┬───────────┐         │
 │  │ Total     │ Critical  │ Warning   │         │
 │  │ 1,234     │ 12        │ 456       │         │
 │  └───────────┴───────────┴───────────┘         │
 │                                                 │
-│  📋 Recent Events                               │
+│   Recent Events                               │
 │  ┌─────────────────────────────────────────┐   │
-│  │ 🔴 Shell spawned in container           │   │
+│  │ [*] Shell spawned in container           │   │
 │  │    Time: 2025-01-26 14:23:45           │   │
 │  │    Pod: nginx-pod                       │   │
 │  │    Namespace: production                │   │
 │  ├─────────────────────────────────────────┤   │
-│  │ ⚠️  Write to /etc in production         │   │
+│  │ [!]  Write to /etc in production         │   │
 │  │    Time: 2025-01-26 14:22:10           │   │
 │  │    Pod: api-server                      │   │
 │  └─────────────────────────────────────────┘   │
@@ -466,7 +448,7 @@ kubectl get svc -n falco falco-falcosidekick-ui
 
 **Rule別フィルタ**：
 
-```
+```text
 検索ボックスに入力:
 - "Shell spawned"      → シェル実行関連のみ表示
 - "k8s.ns.name=prod"   → productionネームスペース のみ
@@ -512,7 +494,7 @@ kubectl get svc -n falco falco-falcosidekick-ui
 
 ---
 
-## 5. Prometheusとの連携
+## Prometheusとの連携
 
 ### 5.1 Prometheusメトリクスの有効化
 
@@ -533,7 +515,7 @@ falcosidekick:
 
 **公開されるメトリクス**：
 
-```
+```text
 # Falcoイベント総数
 falco_events_total{priority="warning", rule="Shell spawned in container"} 42
 
@@ -556,7 +538,7 @@ falcosidekick_request_duration_seconds_bucket{le="0.1"} 35
 
 **または、直接URLからインポート**：
 
-```
+```text
 https://grafana.com/grafana/dashboards/11914-falco-dashboard/
 ```
 
@@ -597,7 +579,7 @@ rate(falco_events_total[5m]) * 60
 
 ---
 
-## 6. Elasticsearch + Kibanaでの可視化
+## Elasticsearch + Kibanaでの可視化
 
 ### 6.1 Elasticsearchへの送信設定
 
@@ -624,17 +606,17 @@ falcosidekick:
 
 ```bash
 # Kibana UIで以下を実行:
-# 1. Management → Index Patterns → Create index pattern
-# 2. Index pattern name: "falco*"
-# 3. Time field: "@timestamp" または "time"
-# 4. Create index pattern
+# Management → Index Patterns → Create index pattern
+# Index pattern name: "falco*"
+# Time field: "@timestamp" または "time"
+# Create index pattern
 ```
 
 ### 6.3 Kibana Discover でのログ検索
 
 **検索クエリ例**：
 
-```
+```text
 # Criticalアラートだけ
 priority: "Critical"
 
@@ -653,7 +635,7 @@ output_fields.container.image.repository: "*nginx*"
 
 ---
 
-## 7. 実践：エンドツーエンドの運用フロー
+## 実践：エンドツーエンドの運用フロー
 
 ### シナリオ: 本番環境でのSSH実行を検知・対応
 
@@ -706,18 +688,18 @@ ssh test@example.com
 
 数秒以内にSlackに次のようなメッセージが届きます：
 
-```
-⚠️ Falco Alert: SSH Execution in Production
+```text
+[!] Falco Alert: SSH Execution in Production
 
 Priority: ERROR
 Time: 2025-01-26 15:30:45
 
 Details:
-• User: root
-• Command: ssh test@example.com
-• Container: test-ssh
-• Pod: test-ssh
-• Namespace: production
+- User: root
+- Command: ssh test@example.com
+- Container: test-ssh
+- Pod: test-ssh
+- Namespace: production
 
 Full Output:
 SSH client executed in production environment (user=root command=ssh test@example.com pod=test-ssh container=test-ssh image=alpine)
@@ -740,16 +722,16 @@ SSH client executed in production environment (user=root command=ssh test@exampl
 **ステップ7: 対応とエスカレーション**
 
 ```bash
-# 1. Podの詳細を調査
+# Podの詳細を調査
 kubectl describe pod test-ssh -n production
 
-# 2. 最近のログを確認
+# 最近のログを確認
 kubectl logs test-ssh -n production --tail=100
 
-# 3. 不正なアクティビティと判断した場合、Podを削除
+# 不正なアクティビティと判断した場合、Podを削除
 kubectl delete pod test-ssh -n production
 
-# 4. ネットワークポリシーで将来の外部SSH接続をブロック
+# ネットワークポリシーで将来の外部SSH接続をブロック
 kubectl apply -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -774,7 +756,7 @@ EOF
 
 ---
 
-## 8. 高度な設定
+## 高度な設定
 
 ### 8.1 複数環境での通知先分離
 
@@ -879,7 +861,7 @@ exports.handler = async (event) => {
 
 ---
 
-## 9. トラブルシューティング
+## トラブルシューティング
 
 ### 9.1 Slack通知が届かない
 
@@ -955,22 +937,22 @@ curl http://localhost:2801/metrics
 
 ---
 
-## 10. まとめ
+## まとめ
 
 この章では、Falcosidekickを使った通知と可視化について学びました。
 
 ### 学んだこと
 
-✅ **Falcosidekickの役割** - Falcoイベントを60+の外部サービスへルーティング
-✅ **通知設定** - Slack/Teams/PagerDuty/Email連携
-✅ **Falcosidekick UI** - Webベースのリアルタイムアラート管理
-✅ **Prometheus/Grafana** - メトリクス化とトレンド分析
-✅ **Elasticsearch/Kibana** - 長期保存と高度なログ検索
-✅ **実践運用フロー** - 検知→通知→調査→対応の一連の流れ
+[OK] **Falcosidekickの役割** - Falcoイベントを60+の外部サービスへルーティング
+[OK] **通知設定** - Slack/Teams/PagerDuty/Email連携
+[OK] **Falcosidekick UI** - Webベースのリアルタイムアラート管理
+[OK] **Prometheus/Grafana** - メトリクス化とトレンド分析
+[OK] **Elasticsearch/Kibana** - 長期保存と高度なログ検索
+[OK] **実践運用フロー** - 検知→通知→調査→対応の一連の流れ
 
 ### アーキテクチャのベストプラクティス
 
-```
+```text
 推奨構成:
 - Falco (DaemonSet): 全ノードでイベント検知
 - Falcosidekick (Deployment): イベントルーティング

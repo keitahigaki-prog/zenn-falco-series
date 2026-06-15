@@ -8,10 +8,10 @@ title: "第3回：ローカル環境でFalcoを動かす（最速10分Hands-on�
 
 ## この章で学ぶこと
 
-- ✅ ローカル環境でのFalco環境構築（3つの方法）
-- ✅ Falcoのインストールと起動
-- ✅ 実際の脅威検知を体験
-- ✅ デバッグとトラブルシューティング
+- [OK] ローカル環境でのFalco環境構築（3つの方法）
+- [OK] Falcoのインストールと起動
+- [OK] 実際の脅威検知を体験
+- [OK] デバッグとトラブルシューティング
 
 ---
 
@@ -23,10 +23,10 @@ title: "第3回：ローカル環境でFalcoを動かす（最速10分Hands-on�
 
 | 環境 | 難易度 | セットアップ時間 | 推奨度 |
 |------|--------|-----------------|--------|
-| **Docker Desktop** | ⭐ 簡単 | 5分 | ⭐⭐⭐ 最推奨 |
-| **Kind** | ⭐⭐ 普通 | 10分 | ⭐⭐ 推奨 |
-| **Minikube** | ⭐⭐ 普通 | 10分 | ⭐⭐ 推奨 |
-| **実マシン** | ⭐⭐⭐ 難しい | 15分 | ⭐ 非推奨 |
+| **Docker Desktop** | ★ 簡単 | 5分 | ★★★ 最推奨 |
+| **Kind** | ★★ 普通 | 10分 | ★★ 推奨 |
+| **Minikube** | ★★ 普通 | 10分 | ★★ 推奨 |
+| **実マシン** | ★★★ 難しい | 15分 | ★ 非推奨 |
 
 ### システム要件
 
@@ -100,7 +100,7 @@ docker run --rm -i -t \
 
 Falcoコンテナを起動すると、以下のような出力が表示されます：
 
-```
+```text
 Mon Nov 25 15:00:00 2025: Falco version: 0.37.0
 Mon Nov 25 15:00:00 2025: Falco initialized with configuration file: /etc/falco/falco.yaml
 Mon Nov 25 15:00:00 2025: Loading rules from file /etc/falco/falco_rules.yaml
@@ -112,7 +112,7 @@ Mon Nov 25 15:00:00 2025: Enabled event sources: syscall
 Mon Nov 25 15:00:00 2025: Opening 'syscall' source with modern BPF probe.
 ```
 
-✅ **"Opening 'syscall' source"** が表示されていれば成功です！
+[OK] **"Opening 'syscall' source"** が表示されていれば成功です！
 
 ---
 
@@ -140,11 +140,11 @@ touch /etc/shadow
 
 Falcoが動いているターミナルに戻ると、以下のようなアラートが表示されているはずです：
 
-```
+```text
 15:01:23.123456789: Warning Write below etc (user=root user_loginuid=-1 command=touch /etc/shadow pid=12345 file=/etc/shadow parent=sh container_id=abc123 container_name=confident_darwin)
 ```
 
-🎉 **おめでとうございます！** これがFalcoによる脅威検知です。
+ **おめでとうございます！** これがFalcoによる脅威検知です。
 
 **アラートの読み方:**
 
@@ -171,7 +171,7 @@ exit  # 終了
 
 **Falcoの出力:**
 
-```
+```text
 15:02:15.123456789: Notice A shell was spawned in a container with an attached terminal (user=root user_loginuid=-1 k8s_ns=<NA> k8s_pod=<NA> container=abc123 shell=sh parent=sh cmdline=sh terminal=34816 container_id=abc123 image=alpine)
 ```
 
@@ -184,7 +184,7 @@ apk update
 
 **Falcoの出力:**
 
-```
+```text
 15:03:45.123456789: Error Package management process launched in container (user=root user_loginuid=-1 command=apk update pid=12346 container_id=abc123 container_name=confident_darwin image=alpine:latest)
 ```
 
@@ -254,11 +254,11 @@ cat /etc/passwd
 
 **Falcoの出力:**
 
-```
+```text
 15:10:23.123456789: Warning Sensitive file read (user=root command=cat /etc/passwd file=/etc/passwd container_id=xyz789 container_name=happy_pascal)
 ```
 
-🎉 **カスタムルールが動作しました！**
+ **カスタムルールが動作しました！**
 
 ---
 
@@ -279,7 +279,7 @@ cat /host/etc/shadow
 
 **Falcoの出力:**
 
-```
+```text
 15:15:00.123456789: Critical Container with sensitive mount (container_id=def456 mount_source=/ mount_dest=/host image=alpine:latest)
 15:15:05.123456789: Warning Read sensitive file untrusted (user=root file=/host/etc/shadow)
 ```
@@ -296,7 +296,7 @@ cat /host/etc/shadow
 ### 問題1: Falcoが起動しない
 
 **症状:**
-```
+```text
 ERROR: Could not open /host/proc
 ```
 
@@ -334,7 +334,7 @@ Falcoは起動しているが、何をしてもアラートが出ない
 ### 問題3: パーミッションエラー
 
 **症状:**
-```
+```text
 ERROR: Cannot load kernel module
 ```
 
@@ -527,12 +527,12 @@ docker run --rm -i -t \
 
 ### 学んだこと
 
-- ✅ Docker Desktop/Kind/MinikubeでのFalco環境構築
-- ✅ Falcoの起動と基本操作
-- ✅ センシティブファイルへのアクセス検知
-- ✅ シェル起動、パッケージ管理ツールの検知
-- ✅ カスタムルールの作成と適用
-- ✅ トラブルシューティング
+- [OK] Docker Desktop/Kind/MinikubeでのFalco環境構築
+- [OK] Falcoの起動と基本操作
+- [OK] センシティブファイルへのアクセス検知
+- [OK] シェル起動、パッケージ管理ツールの検知
+- [OK] カスタムルールの作成と適用
+- [OK] トラブルシューティング
 
 ### 次章の予告
 
@@ -555,13 +555,13 @@ docker run --rm -i -t \
 以下の操作を行い、Falcoがどのようなアラートを出すか確認してください：
 
 ```bash
-# 1. コンテナ内でviを起動
+# コンテナ内でviを起動
 vi /tmp/test.txt
 
-# 2. コンテナ内でcurlを実行
+# コンテナ内でcurlを実行
 curl https://example.com
 
-# 3. コンテナ内でネットワーク情報を確認
+# コンテナ内でネットワーク情報を確認
 netstat -an
 ```
 
@@ -599,7 +599,7 @@ netstat -an
 ---
 
 **所要時間**: 15分（初回は20-30分）
-**難易度**: ⭐⭐ 初中級
+**難易度**: ★★ 初中級
 **前提知識**: Docker基本操作
 
 次章では、これらの検知を生み出す「Falcoルール」の書き方を詳しく学びます。

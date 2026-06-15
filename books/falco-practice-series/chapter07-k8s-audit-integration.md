@@ -26,7 +26,7 @@ title: "第7回：K8s Audit Log × Falcoの連携"
 
 ---
 
-## 1. Syscall vs Kubernetes Audit
+## Syscall vs Kubernetes Audit
 
 ### 1.1 Syscallイベントの特徴
 
@@ -41,13 +41,13 @@ title: "第7回：K8s Audit Log × Falcoの連携"
 
 **検知範囲**：
 
-✅ コンテナ内でのプロセス実行（bash, ssh, curl等）
-✅ ファイルアクセス（/etc/shadow読み取り、/etc書き込み等）
-✅ ネットワーク接続（外部への通信、ポート待ち受け等）
+[OK] コンテナ内でのプロセス実行（bash, ssh, curl等）
+[OK] ファイルアクセス（/etc/shadow読み取り、/etc書き込み等）
+[OK] ネットワーク接続（外部への通信、ポート待ち受け等）
 
-❌ **kubectl操作は検知できない**（API経由のため、syscallを通らない）
-❌ **RBAC変更は検知できない**（Kubernetes APIレベルの操作）
-❌ **誰が操作したか不明**（コンテナ内のユーザーは分かるが、kubectl実行者は分からない）
+[NG] **kubectl操作は検知できない**（API経由のため、syscallを通らない）
+[NG] **RBAC変更は検知できない**（Kubernetes APIレベルの操作）
+[NG] **誰が操作したか不明**（コンテナ内のユーザーは分かるが、kubectl実行者は分からない）
 
 ### 1.2 Kubernetes Auditイベントの特徴
 
@@ -62,44 +62,25 @@ Kubernetes Audit Logは、**API Server経由の全ての操作**を記録しま�
 
 **検知範囲**：
 
-✅ kubectl操作（get, create, delete, patch等）
-✅ 操作者の特定（user, serviceAccount情報）
-✅ RBAC変更（Role, RoleBinding, ClusterRole等）
-✅ リソース変更の詳細（変更前後のマニフェスト）
+[OK] kubectl操作（get, create, delete, patch等）
+[OK] 操作者の特定（user, serviceAccount情報）
+[OK] RBAC変更（Role, RoleBinding, ClusterRole等）
+[OK] リソース変更の詳細（変更前後のマニフェスト）
 
-❌ **コンテナ内部の動作は検知できない**（APIレベルなので、bash実行等は見えない）
+[NG] **コンテナ内部の動作は検知できない**（APIレベルなので、bash実行等は見えない）
 
 ### 1.3 両方必要な理由
 
 **シナリオ：攻撃者がクラスタに侵入した場合**
 
-```
-┌────────────────────────────────────────────────┐
-│ Step 1: 脆弱なWebアプリへの侵入               │
-│ ↓ Syscallで検知可能                           │
-│ - Webコンテナ内でbash実行                      │
-│ - curlで外部C&Cサーバーと通信                  │
-└────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    S1["Step 1: 脆弱なWebアプリへの侵入<br/>↓ Syscallで検知可能<br/>- Webコンテナ内でbash実行<br/>- curlで外部C&Cサーバーと通信"]
+    S2["Step 2: ServiceAccountトークンの窃取<br/>↓ Syscallで検知可能<br/>- /var/run/secrets/kubernetes.io/...を読み取り"]
+    S3["Step 3: kubectl経由での権限昇格<br/>↓ Auditでのみ検知可能<br/>- ServiceAccountトークンを使ってAPI呼び出し<br/>- ClusterRoleBindingを作成して権限取得"]
+    S4["Step 4: Secretの取得<br/>↓ Auditでのみ検知可能<br/>- kubectl get secrets --all-namespaces<br/>- データベース認証情報を取得"]
 
-┌────────────────────────────────────────────────┐
-│ Step 2: ServiceAccountトークンの窃取          │
-│ ↓ Syscallで検知可能                           │
-│ - /var/run/secrets/kubernetes.io/...を読み取り │
-└────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────┐
-│ Step 3: kubectl経由での権限昇格               │
-│ ↓ Auditでのみ検知可能                         │
-│ - ServiceAccountトークンを使ってAPI呼び出し    │
-│ - ClusterRoleBindingを作成して権限取得         │
-└────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────┐
-│ Step 4: Secretの取得                          │
-│ ↓ Auditでのみ検知可能                         │
-│ - kubectl get secrets --all-namespaces        │
-│ - データベース認証情報を取得                   │
-└────────────────────────────────────────────────┘
+    S1 --> S2 --> S3 --> S4
 ```
 
 **結論**：
@@ -110,38 +91,26 @@ Kubernetes Audit Logは、**API Server経由の全ての操作**を記録しま�
 
 ---
 
-## 2. Kubernetes Audit Logとは
+## Kubernetes Audit Logとは
 
 ### 2.1 Audit Logの基本
 
 Kubernetes Audit Logは、**API Serverへの全てのリクエスト**を記録する機能です。
 
-```
-┌─────────────────────────────────────────────┐
-│            User / ServiceAccount            │
-│           (kubectl / CI/CD Tool)            │
-└─────────────────┬───────────────────────────┘
-                  │ kubectl get pods
-                  ↓
-┌─────────────────────────────────────────────┐
-│         Kubernetes API Server               │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │    Audit Policy                     │   │
-│  │    (どのイベントを記録するか)         │   │
-│  └──────────────┬──────────────────────┘   │
-│                 ↓                           │
-│  ┌─────────────────────────────────────┐   │
-│  │    Audit Backends                   │   │
-│  │    - Log (ファイル出力)              │   │
-│  │    - Webhook (外部サービス送信)      │   │
-│  └─────────────┬───────────────────────┘   │
-└────────────────┼───────────────────────────┘
-                 │
-                 ↓
-      ┌──────────────────┐
-      │ Falco (Webhook)  │
-      └──────────────────┘
+```mermaid
+flowchart TD
+    User["User / ServiceAccount<br/>(kubectl / CI/CD Tool)"]
+
+    subgraph APIServer["Kubernetes API Server"]
+        Policy["Audit Policy<br/>(どのイベントを記録するか)"]
+        Backends["Audit Backends<br/>- Log (ファイル出力)<br/>- Webhook (外部サービス送信)"]
+        Policy --> Backends
+    end
+
+    Falco["Falco (Webhook)"]
+
+    User -->|"kubectl get pods"| Policy
+    Backends --> Falco
 ```
 
 ### 2.2 監査レベル
@@ -206,7 +175,7 @@ rules:
 
 ---
 
-## 3. Audit Webhookのセットアップ
+## Audit Webhookのセットアップ
 
 ### 3.1 Minikubeでの設定
 
@@ -418,7 +387,7 @@ kind create cluster --config kind-config.yaml
 
 ---
 
-## 4. Falcoとの連携
+## Falcoとの連携
 
 ### 4.1 Falco K8s Audit Webhookのデプロイ
 
@@ -507,7 +476,7 @@ kubectl logs -n falco -l app.kubernetes.io/name=falco --tail=50 | grep -i audit
 
 ---
 
-## 5. 実践的なAuditルールの作成
+## 実践的なAuditルールの作成
 
 ### 実例1: ClusterRoleBinding変更の検知
 
@@ -698,7 +667,7 @@ kubectl logs -n falco -l app.kubernetes.io/name=falco | grep "Privileged pod cre
 
 ---
 
-## 6. ハンズオン：kubectl操作を完全監査
+## ハンズオン：kubectl操作を完全監査
 
 ### シナリオ：本番環境の全操作を記録・監査
 
@@ -781,27 +750,27 @@ kubectl edit deployment falco -n falco
 # production namespaceを作成
 kubectl create namespace production
 
-# 1. Pod作成
+# Pod作成
 kubectl run nginx --image=nginx -n production
 
-# 2. Secret作成
+# Secret作成
 kubectl create secret generic db-password \
   --from-literal=password=super-secret \
   -n production
 
-# 3. Secret取得
+# Secret取得
 kubectl get secret db-password -n production -o yaml
 
-# 4. Deployment作成
+# Deployment作成
 kubectl create deployment api-server --image=myapp:v1.0 -n production
 
-# 5. RoleBinding作成
+# RoleBinding作成
 kubectl create rolebinding dev-access \
   --clusterrole=edit \
   --user=developer@example.com \
   -n production
 
-# 6. Pod削除
+# Pod削除
 kubectl delete pod nginx -n production
 ```
 
@@ -816,29 +785,29 @@ kubectl port-forward -n falco svc/falco-falcosidekick-ui 2802:2802
 
 **期待される結果**：
 
-```
-📋 Audit Events (Last 5 minutes)
+```text
+ Audit Events (Last 5 minutes)
 
-ℹ️  Production operation detected
+[i]  Production operation detected
     User: kubernetes-admin
     Verb: create
     Resource: pods
     Name: nginx
     Time: 15:30:45
 
-⚠️  Production secret accessed
+[!]  Production secret accessed
     User: kubernetes-admin
     Verb: create
     Secret: db-password
     Time: 15:31:02
 
-⚠️  Production secret accessed
+[!]  Production secret accessed
     User: kubernetes-admin
     Verb: get
     Secret: db-password
     Time: 15:31:15
 
-🔴 Production RBAC changed
+[*] Production RBAC changed
     User: kubernetes-admin
     Verb: create
     Resource: rolebindings
@@ -860,7 +829,7 @@ source: "k8s_audit" AND output_fields.ka.target.namespace: "production"
 
 ---
 
-## 7. 本番運用のポイント
+## 本番運用のポイント
 
 ### 7.1 ログ量の管理
 
@@ -1017,49 +986,34 @@ spec:
 
 **推奨構成**：
 
-```
-┌─────────────────────────────────────────────┐
-│ API Server Audit Log                        │
-│ ↓ (Metadata/Request Levelに限定)            │
-└─────────────────┬───────────────────────────┘
-                  ↓
-┌─────────────────────────────────────────────┐
-│ Falco K8s Audit Webhook                     │
-│ - 重要イベントだけアラート                   │
-│ - 全イベントをElasticsearchに転送            │
-└─────────────────┬───────────────────────────┘
-                  ↓
-┌─────────────────────────────────────────────┐
-│ Elasticsearch (Hot Storage)                 │
-│ - 7日間保存                                 │
-│ - 高速検索                                  │
-└─────────────────┬───────────────────────────┘
-                  ↓
-┌─────────────────────────────────────────────┐
-│ S3 / Cloud Storage (Cold Storage)           │
-│ - 365日保存（コンプライアンス要件）          │
-│ - 低コスト                                  │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["API Server Audit Log<br/>(Metadata/Request Levelに限定)"]
+    B["Falco K8s Audit Webhook<br/>- 重要イベントだけアラート<br/>- 全イベントをElasticsearchに転送"]
+    C["Elasticsearch (Hot Storage)<br/>- 7日間保存<br/>- 高速検索"]
+    D["S3 / Cloud Storage (Cold Storage)<br/>- 365日保存（コンプライアンス要件）<br/>- 低コスト"]
+
+    A --> B --> C --> D
 ```
 
 ---
 
-## 8. まとめ
+## まとめ
 
 この章では、Kubernetes Audit LogとFalcoの連携について学びました。
 
 ### 学んだこと
 
-✅ **Syscall vs Audit** - コンテナ内部監視とAPI監視の相互補完性
-✅ **Audit Log設定** - 4つの監査レベルとAudit Policy
-✅ **Webhook設定** - Minikube/EKS/GKE/AKS別の構成方法
-✅ **Falco連携** - K8s Audit Webhookのデプロイと設定
-✅ **実践ルール** - RBAC変更、Secret取得、Pod削除、特権Pod検知
-✅ **本番運用** - ログ量管理、優先順位付け、パフォーマンス最適化
+[OK] **Syscall vs Audit** - コンテナ内部監視とAPI監視の相互補完性
+[OK] **Audit Log設定** - 4つの監査レベルとAudit Policy
+[OK] **Webhook設定** - Minikube/EKS/GKE/AKS別の構成方法
+[OK] **Falco連携** - K8s Audit Webhookのデプロイと設定
+[OK] **実践ルール** - RBAC変更、Secret取得、Pod削除、特権Pod検知
+[OK] **本番運用** - ログ量管理、優先順位付け、パフォーマンス最適化
 
 ### セキュリティの完全性
 
-```
+```text
 完全なKubernetesセキュリティ監視:
 1. Syscall監視（Falco） → コンテナ内の異常動作
 2. Audit監視（Falco + K8s Audit） → Kubernetes API操作

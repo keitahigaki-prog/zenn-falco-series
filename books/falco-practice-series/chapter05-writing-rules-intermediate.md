@@ -23,7 +23,7 @@ title: "第5回：Falcoのルールを書く（中級編）- 実運用に寄せ�
 
 ---
 
-## 1. なぜ実運用では「例外」が必要なのか
+## なぜ実運用では「例外」が必要なのか
 
 ### 1.1 典型的な問題：正常動作が検知される
 
@@ -77,7 +77,7 @@ title: "第5回：Falcoのルールを書く（中級編）- 実運用に寄せ�
 
 ---
 
-## 2. スコープの限定テクニック
+## スコープの限定テクニック
 
 ### 2.1 namespaceによる限定
 
@@ -185,7 +185,7 @@ spec:
 
 ---
 
-## 3. 例外（Exception）の作り方
+## 例外（Exception）の作り方
 
 Falcoでは、**exception機能**を使って例外を綺麗に管理できます。
 
@@ -337,7 +337,7 @@ kubectl exec -it test-pod -- apt-get update
 
 ---
 
-## 4. 実運用パターン集
+## 実運用パターン集
 
 ### パターン1：CI/CDジョブの例外管理
 
@@ -416,13 +416,13 @@ slack:
   webhookurl: "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
   minimumpriority: "notice"
   messageformat: |
-    🚨 kubectl exec detected in production!
+    [!] kubectl exec detected in production!
 
-    • User: {{.user.name}}
-    • Pod: {{.k8s.pod.name}}
-    • Namespace: {{.k8s.ns.name}}
-    • Command: {{.proc.cmdline}}
-    • Time: {{.output_fields.evt.time}}
+    - User: {{.user.name}}
+    - Pod: {{.k8s.pod.name}}
+    - Namespace: {{.k8s.ns.name}}
+    - Command: {{.proc.cmdline}}
+    - Time: {{.output_fields.evt.time}}
 ```
 
 ### パターン3：機密ファイルアクセスの段階的検知
@@ -596,7 +596,7 @@ spec:
 
 ---
 
-## 5. ノイズ削減戦略
+## ノイズ削減戦略
 
 ### 5.1 ベースラインの作成
 
@@ -645,7 +645,7 @@ head -20 rule_by_image.txt
 
 **出力例**：
 
-```
+```text
 === Top 20 Noisy Rules ===
   12543 Shell Spawned in Container
    8921 Write to /etc directory
@@ -713,12 +713,12 @@ customfields:
 slack:
   minimumpriority: "warning"
   messageformat: |
-    📊 Falco Alert Summary (last 10 minutes)
+     Falco Alert Summary (last 10 minutes)
 
-    • Rule: {{.rule}}
-    • Count: {{.count}}
-    • Affected Pods: {{.pods | join ", "}}
-    • Namespaces: {{.namespaces | uniq | join ", "}}
+    - Rule: {{.rule}}
+    - Count: {{.count}}
+    - Affected Pods: {{.pods | join ", "}}
+    - Namespaces: {{.namespaces | uniq | join ", "}}
 ```
 
 **パターンC：重要度による通知先分離**
@@ -741,7 +741,7 @@ elasticsearch:
 
 ---
 
-## 6. 変更の影響範囲テスト
+## 変更の影響範囲テスト
 
 ### 6.1 テスト環境での検証
 
@@ -830,16 +830,16 @@ spec:
 **ロールアウト手順**：
 
 ```bash
-# 1. カナリアノードをラベリング（全体の10%）
+# カナリアノードをラベリング（全体の10%）
 kubectl label nodes node-1 node-2 falco-canary=true
 
-# 2. カナリア用ルールをデプロイ
+# カナリア用ルールをデプロイ
 kubectl apply -f falco-rules-canary.yaml
 
-# 3. 24時間監視
+# 24時間監視
 kubectl logs -n falco -l version=canary | grep -i error
 
-# 4. 問題なければ全体にロールアウト
+# 問題なければ全体にロールアウト
 kubectl label nodes --all falco-canary=true
 kubectl rollout restart daemonset/falco -n falco
 ```
@@ -885,11 +885,11 @@ spec:
 
 ---
 
-## 7. ルール管理のベストプラクティス
+## ルール管理のベストプラクティス
 
 ### 7.1 ファイル構成
 
-```
+```text
 /etc/falco/
 ├── falco.yaml                    # Falco本体設定
 ├── falco_rules.yaml              # デフォルトルール（変更不可）
@@ -986,17 +986,17 @@ jobs:
 
 ---
 
-## 8. まとめ
+## まとめ
 
 この章では、実運用に耐えるFalcoルールの書き方を学びました。
 
 ### 学んだこと
 
-✅ **スコープ限定** - namespace/labelsで検知対象を絞る
-✅ **例外処理** - exception機能で正常動作を除外
-✅ **ノイズ削減** - ベースライン収集と段階的適用
-✅ **影響範囲テスト** - カナリアデプロイとロールバック戦略
-✅ **実運用パターン** - CI/CD、kubectl exec、コンプライアンス対応
+[OK] **スコープ限定** - namespace/labelsで検知対象を絞る
+[OK] **例外処理** - exception機能で正常動作を除外
+[OK] **ノイズ削減** - ベースライン収集と段階的適用
+[OK] **影響範囲テスト** - カナリアデプロイとロールバック戦略
+[OK] **実運用パターン** - CI/CD、kubectl exec、コンプライアンス対応
 
 ### 次のステップ
 
