@@ -1,7 +1,7 @@
 title: "Falcoの進化と次世代Runtime - AI時代のランタイムセキュリティ"
 summary: "単一バイナリのsyscall検知エンジンだったFalcoは、ドライバの進化・プラグイン・自動レスポンス・観測ツールを取り込み、ランタイムセキュリティ『プラットフォーム』へと進化した。本書は Falco の進化史を辿りながら、AI時代に生まれた『AIワークロードを守る』『AIで守る』という二つの課題と、Sysdig OSS コミュニティが描く次世代Runtimeの姿を、解説・考察と実例で読み解く。"
 topics: ["falco", "security", "ai", "kubernetes", "ebpf"]
-published: false # レビュー後に true へ。published前はZennに公開されません
+published: true # 公開
 price: 0 # 無料
 # 本に含めるチャプターを順番に並べます
 chapters:
