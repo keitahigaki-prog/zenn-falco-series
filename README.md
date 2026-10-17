@@ -19,6 +19,24 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 
 **🎉 全10回の連載が完結しました！**
 
+## 新刊：攻撃して学ぶ Kubernetes Runtime Security
+
+前作の発展編として、攻撃者視点でKubernetesランタイムセキュリティを学ぶ新刊を執筆中です（技術書典への印刷頒布も予定）。
+
+| 章 | タイトル | 公開状況 |
+|----|----------|----------|
+| はじめに | [なぜ『攻撃者視点』でRuntime Securityを学ぶのか](books/k8s-attack-runtime-security/introduction.md) | ✅ 執筆完了 |
+| 第1章 | [攻撃者から見たKubernetes](books/k8s-attack-runtime-security/chapter01-attacker-view-of-k8s.md) | ✅ 執筆完了 |
+| 第2章 | 攻撃・観測ラボの構築 | 🚧 執筆中 |
+| 第3章 | Initial Access：コンテナへの侵入 | 📝 未着手 |
+| 第4章 | Execution：コンテナ内部での不正実行 | 📝 未着手 |
+| 第5章 | Privilege Escalation：権限昇格 | 📝 未着手 |
+| 第6章 | Container Escape：ホスト境界の突破 | 📝 未着手 |
+| 第7章 | Lateral Movement：クラスタ内横展開 | 📝 未着手 |
+| 第8章 | Credential AccessとExfiltration | 📝 未着手 |
+| 第9章 | Falco・eBPFによる攻撃の追跡 | 📝 未着手 |
+| 第10章 | Runtime Detectionの限界と評価 | 📝 未着手 |
+
 ## 開発環境
 
 このリポジトリは[Zenn CLI](https://zenn.dev/zenn/articles/zenn-cli-guide)で管理されています。
