@@ -53,7 +53,7 @@ Kubernetes自体の侵害ではありませんが、設定ミスのあるWAF（W
 
 Kubernetesクラスタへの攻撃経路は、ひとつではありません。レイヤーごとに整理すると見通しが良くなります。
 
-![図1-1：Kubernetesの攻撃対象領域（Attack Surface）](/images/ch01-attack-surface.svg)
+![図1-1：Kubernetesの攻撃対象領域（Attack Surface）](/images/ch01-attack-surface.png)
 
 それぞれのレイヤーで、攻撃者が何を狙っているのかを具体的に見ておきます。
 

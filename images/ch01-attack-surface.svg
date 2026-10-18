@@ -1,4 +1,4 @@
-<svg viewBox="0 0 1200 860" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+<svg viewBox="0 0 1280 860" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
   <defs>
     <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 Z" fill="#EF4444"/>
@@ -8,11 +8,11 @@
     </marker>
   </defs>
 
-  <rect x="0" y="0" width="1200" height="860" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="1280" height="860" fill="#FFFFFF"/>
 
   <!-- Title -->
-  <text x="600" y="40" font-size="24" font-weight="700" fill="#0F172A" text-anchor="middle">図1-1　Kubernetesの攻撃対象領域（Attack Surface）</text>
-  <text x="600" y="66" font-size="13" fill="#1E293B" text-anchor="middle">実線＝攻撃者が直接辿る経路　破線＝設定・権限に依存する条件付きの経路　青＝攻撃経路ではない通常のアーキテクチャ上の通信</text>
+  <text x="640" y="40" font-size="24" font-weight="700" fill="#0F172A" text-anchor="middle">図1-1　Kubernetesの攻撃対象領域（Attack Surface）</text>
+  <text x="640" y="66" font-size="13" fill="#1E293B" text-anchor="middle">実線＝攻撃者が直接辿る経路　破線＝設定・権限に依存する条件付きの経路　青＝攻撃経路ではない通常のアーキテクチャ上の通信</text>
 
   <!-- Group: External -->
   <rect x="40" y="90" width="300" height="230" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
@@ -23,36 +23,36 @@
   <text x="190" y="252" font-size="14" fill="#1E293B" text-anchor="middle">コンテナレジストリ</text>
   <text x="190" y="268" font-size="14" fill="#1E293B" text-anchor="middle">・イメージ</text>
 
-  <!-- Group: DataPlane -->
+  <!-- Group: DataPlane (box width 260, group width 340 -> 40px internal lane on the right for the kubelet loop, fully contained) -->
   <rect x="400" y="90" width="340" height="460" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
   <text x="570" y="114" font-size="15" font-weight="600" fill="#0F172A" text-anchor="middle">データプレーン（ノード／Pod）</text>
-  <rect x="420" y="132" width="300" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="570" y="165" font-size="14" fill="#1E293B" text-anchor="middle">コンテナ / Pod</text>
-  <rect x="420" y="228" width="300" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="570" y="261" font-size="14" fill="#1E293B" text-anchor="middle">コンテナランタイム（CRI）</text>
-  <rect x="420" y="324" width="300" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="570" y="357" font-size="14" fill="#1E293B" text-anchor="middle">ノード（ホストOS）</text>
-  <rect x="420" y="420" width="300" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6 4"/>
-  <text x="570" y="450" font-size="14" fill="#1E293B" text-anchor="middle">kubelet API</text>
-  <text x="570" y="468" font-size="11" fill="#1E293B" text-anchor="middle">（ノード上で動くが独立した経路）</text>
+  <rect x="420" y="132" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="550" y="165" font-size="14" fill="#1E293B" text-anchor="middle">コンテナ / Pod</text>
+  <rect x="420" y="228" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="550" y="261" font-size="14" fill="#1E293B" text-anchor="middle">コンテナランタイム（CRI）</text>
+  <rect x="420" y="324" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="550" y="357" font-size="14" fill="#1E293B" text-anchor="middle">ノード（ホストOS）</text>
+  <rect x="420" y="420" width="260" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="550" y="450" font-size="14" fill="#1E293B" text-anchor="middle">kubelet API</text>
+  <text x="550" y="468" font-size="11" fill="#1E293B" text-anchor="middle">（ノード上で動くが独立した経路）</text>
 
   <!-- Group: ControlPlane -->
-  <rect x="840" y="90" width="300" height="230" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
-  <text x="990" y="114" font-size="15" font-weight="600" fill="#0F172A" text-anchor="middle">コントロールプレーン</text>
-  <rect x="860" y="132" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="990" y="165" font-size="14" fill="#1E293B" text-anchor="middle">kube-apiserver</text>
-  <rect x="860" y="228" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="990" y="261" font-size="14" fill="#1E293B" text-anchor="middle">etcd</text>
+  <rect x="900" y="90" width="300" height="230" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="1050" y="114" font-size="15" font-weight="600" fill="#0F172A" text-anchor="middle">コントロールプレーン</text>
+  <rect x="920" y="132" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="1050" y="165" font-size="14" fill="#1E293B" text-anchor="middle">kube-apiserver</text>
+  <rect x="920" y="228" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="1050" y="261" font-size="14" fill="#1E293B" text-anchor="middle">etcd</text>
 
   <!-- Group: CloudLayer -->
-  <rect x="840" y="360" width="300" height="330" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
-  <text x="990" y="384" font-size="15" font-weight="600" fill="#0F172A" text-anchor="middle">クラウド基盤（GKE/EKS/AKS等）</text>
-  <rect x="860" y="402" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="990" y="435" font-size="14" fill="#1E293B" text-anchor="middle">インスタンスメタデータAPI</text>
-  <rect x="860" y="498" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="990" y="531" font-size="14" fill="#1E293B" text-anchor="middle">IAM / サービスアカウント</text>
-  <rect x="860" y="594" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-  <text x="990" y="627" font-size="14" fill="#1E293B" text-anchor="middle">VPC / ネットワーク境界</text>
+  <rect x="900" y="360" width="300" height="330" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="1050" y="384" font-size="15" font-weight="600" fill="#0F172A" text-anchor="middle">クラウド基盤（GKE/EKS/AKS等）</text>
+  <rect x="920" y="402" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="1050" y="435" font-size="14" fill="#1E293B" text-anchor="middle">インスタンスメタデータAPI</text>
+  <rect x="920" y="498" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="1050" y="531" font-size="14" fill="#1E293B" text-anchor="middle">IAM / サービスアカウント</text>
+  <rect x="920" y="594" width="260" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="1050" y="627" font-size="14" fill="#1E293B" text-anchor="middle">VPC / ネットワーク境界</text>
 
   <!-- ① App -> Pod -->
   <path d="M320,160 L400,160 L400,148 L420,148" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
@@ -65,66 +65,67 @@
   <text x="335" y="211" font-size="12" fill="#1E293B">② 悪意あるイメージ</text>
 
   <!-- ③ Pod -> CRI -->
-  <path d="M570,188 L570,228" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
-  <circle cx="602" cy="208" r="12" fill="#EF4444"/>
-  <text x="602" y="212" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
-  <text x="618" y="212" font-size="12" fill="#1E293B">CRIの脆弱性等でエスケープ</text>
+  <path d="M550,188 L550,228" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <circle cx="582" cy="208" r="12" fill="#EF4444"/>
+  <text x="582" y="212" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+  <text x="598" y="212" font-size="12" fill="#1E293B">CRIの脆弱性等でエスケープ</text>
 
   <!-- ④ CRI -> Node -->
-  <path d="M570,284 L570,324" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
-  <circle cx="602" cy="304" r="12" fill="#EF4444"/>
-  <text x="602" y="308" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
+  <path d="M550,284 L550,324" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <circle cx="582" cy="304" r="12" fill="#EF4444"/>
+  <text x="582" y="308" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
 
   <!-- Node -> kubelet (dashed, side path) -->
-  <path d="M570,380 L570,420" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
-  <rect x="582" y="390" width="150" height="20" fill="#FFFFFF" opacity="0.9"/>
-  <text x="584" y="405" font-size="11" fill="#1E293B">誤公開時のみ到達可能</text>
+  <path d="M550,380 L550,420" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+  <rect x="562" y="390" width="150" height="20" fill="#FFFFFF" opacity="0.9"/>
+  <text x="564" y="405" font-size="11" fill="#1E293B">誤公開時のみ到達可能</text>
 
-  <!-- kubelet -> Pod (loop back, dashed) -->
-  <path d="M720,455 L755,455 L755,176 L720,176" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
-  <rect x="758" y="300" width="120" height="34" fill="#FFFFFF" opacity="0.9"/>
-  <text x="760" y="314" font-size="11" fill="#1E293B">任意コンテナで</text>
-  <text x="760" y="328" font-size="11" fill="#1E293B">コマンド実行</text>
+  <!-- kubelet -> Pod loop, fully contained inside the DataPlane group's own internal lane (x680-720), never enters the external channel -->
+  <path d="M680,455 C 720,455 720,184 680,184" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+  <rect x="744" y="309" width="104" height="34" fill="#FFFFFF" opacity="0.9"/>
+  <text x="746" y="323" font-size="11" fill="#1E293B">任意コンテナで</text>
+  <text x="746" y="337" font-size="11" fill="#1E293B">コマンド実行</text>
 
-  <!-- ⑤ Pod -> API -->
-  <path d="M720,148 L790,148 L790,160 L860,160" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
-  <circle cx="800" cy="120" r="12" fill="#EF4444"/>
-  <text x="800" y="124" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
-  <text x="818" y="124" font-size="12" fill="#1E293B">RBAC悪用</text>
+  <!-- ⑤ Pod -> API (straight, y=148, clears the loop entirely which stays below y184) -->
+  <path d="M680,148 L920,148" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <circle cx="800" cy="130" r="12" fill="#EF4444"/>
+  <text x="800" y="134" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
+  <rect x="750" y="106" width="100" height="20" fill="#FFFFFF" opacity="0.9"/>
+  <text x="755" y="121" font-size="12" fill="#1E293B">RBAC悪用</text>
+
+  <!-- ⑥ Pod -> MetaAPI (curve, bulge x=850 — stays right of the kubelet loop and right of the VPC curve throughout) -->
+  <path d="M680,160 C 850,160 850,430 920,430" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <circle cx="845" cy="295" r="12" fill="#EF4444"/>
+  <text x="845" y="299" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
+  <rect x="861" y="285" width="104" height="20" fill="#FFFFFF" opacity="0.9"/>
+  <text x="863" y="299" font-size="12" fill="#1E293B">メタデータ窃取</text>
+
+  <!-- Pod -> VPC (dashed curve, bulge x=800 — stays between the kubelet loop (720) and the MetaAPI curve (850), no crossing with either) -->
+  <path d="M680,172 C 800,172 800,622 920,622" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
+  <rect x="744" y="345" width="160" height="34" fill="#FFFFFF" opacity="0.9"/>
+  <text x="746" y="359" font-size="11" fill="#1E293B">横展開（クラスタ内</text>
+  <text x="746" y="373" font-size="11" fill="#1E293B">ネットワーク→VPC境界）</text>
 
   <!-- API -> ETCD (normal comm, blue) -->
-  <path d="M990,188 L990,228" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
-  <rect x="1000" y="198" width="140" height="20" fill="#FFFFFF" opacity="0.9"/>
-  <text x="1002" y="213" font-size="11" fill="#1E293B">（通常の内部通信）</text>
-
-  <!-- ⑥ Pod -> MetaAPI -->
-  <path d="M720,160 L780,160 L780,430 L860,430" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
-  <circle cx="780" cy="350" r="12" fill="#EF4444"/>
-  <text x="780" y="354" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">6</text>
-  <rect x="793" y="340" width="90" height="20" fill="#FFFFFF" opacity="0.9"/>
-  <text x="796" y="354" font-size="12" fill="#1E293B">メタデータ窃取</text>
-
-  <!-- Pod -> VPC (dashed, lateral movement) -->
-  <path d="M670,188 L670,206 L810,206 L810,622 L860,622" fill="none" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowRed)"/>
-  <rect x="640" y="700" width="200" height="34" fill="#FFFFFF" opacity="0.9"/>
-  <text x="642" y="714" font-size="11" fill="#1E293B">横展開（クラスタ内ネットワーク</text>
-  <text x="642" y="728" font-size="11" fill="#1E293B">→クラウドVPC境界）</text>
+  <path d="M1050,188 L1050,228" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <rect x="1060" y="198" width="140" height="20" fill="#FFFFFF" opacity="0.9"/>
+  <text x="1062" y="213" font-size="11" fill="#1E293B">（通常の内部通信）</text>
 
   <!-- ⑦ MetaAPI -> IAM -->
-  <path d="M990,458 L990,498" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
-  <circle cx="1022" cy="478" r="12" fill="#EF4444"/>
-  <text x="1022" y="482" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
-  <text x="1038" y="482" font-size="12" fill="#1E293B">トークン悪用</text>
+  <path d="M1050,458 L1050,498" fill="none" stroke="#EF4444" stroke-width="2" marker-end="url(#arrowRed)"/>
+  <circle cx="1082" cy="478" r="12" fill="#EF4444"/>
+  <text x="1082" y="482" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">7</text>
+  <text x="1098" y="482" font-size="12" fill="#1E293B">トークン悪用</text>
 
   <!-- Legend -->
-  <rect x="40" y="760" width="1120" height="80" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <rect x="40" y="760" width="1200" height="80" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
   <line x1="60" y1="782" x2="110" y2="782" stroke="#EF4444" stroke-width="2"/>
   <text x="118" y="786" font-size="12" fill="#1E293B">攻撃者が直接辿る経路（実線・番号①〜⑦は主要ステップ）</text>
   <line x1="60" y1="808" x2="110" y2="808" stroke="#EF4444" stroke-width="2" stroke-dasharray="6 4"/>
   <text x="118" y="812" font-size="12" fill="#1E293B">設定・権限に依存する条件付きの経路（破線）</text>
-  <line x1="640" y1="782" x2="690" y2="782" stroke="#2563EB" stroke-width="2"/>
-  <text x="698" y="786" font-size="12" fill="#1E293B">通常のアーキテクチャ上の通信（攻撃経路ではない）</text>
-  <circle cx="665" cy="808" r="10" fill="#EF4444"/>
-  <text x="665" y="812" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">N</text>
-  <text x="698" y="812" font-size="12" fill="#1E293B">本書で扱う主要な攻撃ステップの番号</text>
+  <line x1="660" y1="782" x2="710" y2="782" stroke="#2563EB" stroke-width="2"/>
+  <text x="718" y="786" font-size="12" fill="#1E293B">通常のアーキテクチャ上の通信（攻撃経路ではない）</text>
+  <circle cx="685" cy="808" r="10" fill="#EF4444"/>
+  <text x="685" y="812" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">N</text>
+  <text x="718" y="812" font-size="12" fill="#1E293B">本書で扱う主要な攻撃ステップの番号</text>
 </svg>
