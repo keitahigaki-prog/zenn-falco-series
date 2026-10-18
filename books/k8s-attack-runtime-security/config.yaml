@@ -12,7 +12,7 @@ chapters:
   - chapter04-execution
   - chapter05-privilege-escalation
   - chapter06-container-escape
-  # - chapter07-lateral-movement
+  - chapter07-lateral-movement
   # - chapter08-credential-access-exfiltration
   # - chapter09-tracking-with-falco-ebpf
   # - chapter10-detection-limits-and-evaluation
