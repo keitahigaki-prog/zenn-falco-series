@@ -9,7 +9,7 @@ chapters:
   - chapter01-attacker-view-of-k8s
   - chapter02-lab-setup
   - chapter03-initial-access
-  # - chapter04-execution
+  - chapter04-execution
   # - chapter05-privilege-escalation
   # - chapter06-container-escape
   # - chapter07-lateral-movement
