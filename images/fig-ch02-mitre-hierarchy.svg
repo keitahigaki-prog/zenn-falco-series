@@ -1,0 +1,36 @@
+<svg viewBox="0 0 1100 420" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+  <defs>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1100" height="420" fill="#FFFFFF"/>
+  <text x="550" y="36" font-size="20" font-weight="700" fill="#0F172A" text-anchor="middle">図2-1　MITRE ATT&amp;CKの全体構成とContainers Matrixの位置づけ</text>
+
+  <rect x="420" y="70" width="260" height="56" rx="8" fill="#0F172A" stroke="#0F172A" stroke-width="1.5"/>
+  <text x="550" y="104" font-size="15" fill="#FFFFFF" text-anchor="middle">MITRE ATT&amp;CK</text>
+
+  <path d="M550,126 L550,150 L250,150 L250,174" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M550,126 L550,174" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M550,126 L550,150 L850,150 L850,174" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <rect x="80" y="174" width="340" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="250" y="198" font-size="13" fill="#1E293B" text-anchor="middle">Enterprise ATT&amp;CK</text>
+  <text x="250" y="216" font-size="11" fill="#1E293B" text-anchor="middle">（Windows/Linux/macOS/Cloud/...）</text>
+
+  <rect x="460" y="174" width="180" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="550" y="206" font-size="13" fill="#1E293B" text-anchor="middle">Mobile ATT&amp;CK</text>
+
+  <rect x="700" y="174" width="180" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="790" y="206" font-size="13" fill="#1E293B" text-anchor="middle">ICS ATT&amp;CK</text>
+
+  <path d="M250,230 L250,264" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <rect x="80" y="264" width="340" height="56" rx="8" fill="#FFFFFF" stroke="#06B6D4" stroke-width="2"/>
+  <text x="250" y="288" font-size="13" fill="#1E293B" text-anchor="middle">Containers Matrix</text>
+  <text x="250" y="306" font-size="11" fill="#1E293B" text-anchor="middle">（2021年追加）</text>
+
+  <path d="M250,320 L250,354" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <rect x="80" y="354" width="340" height="50" rx="8" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+  <text x="250" y="374" font-size="13" fill="#1E293B" text-anchor="middle">本書が扱う範囲</text>
+  <text x="250" y="391" font-size="11" fill="#1E293B" text-anchor="middle">Kubernetes / Docker</text>
+</svg>

@@ -19,28 +19,7 @@ title: "第3章：攻撃・観測ラボの構築"
 
 前章で整理した「3つの境界線」（ノード内 / APIサーバ / クラウドAPI）をすべて観測できる状態にしてから、攻撃実験を始めます。そうしないと、「検知できなかった」のが**ルールの不備なのか、そもそも観測範囲外だったのか**を判別できません。
 
-```mermaid
-flowchart TB
-    subgraph Cluster["Kubernetesクラスタ（self-managed, 1 control-plane + 2 worker）"]
-        CP["control-plane node"]
-        W1["worker node 1<br/>（攻撃対象のワークロードを配置）"]
-        W2["worker node 2<br/>（横展開の着地点）"]
-    end
-
-    subgraph Observability["観測スタック"]
-        Falco["Falco + eBPFドライバ<br/>（全ノードにDaemonSet）"]
-        AuditBackend["Audit Log Webhookバックエンド<br/>（JSON Lines保存）"]
-        PCAP["tcpdump / CNI flow log"]
-        Sidekick["Falcosidekick → ローカルFile/Elasticsearch"]
-    end
-
-    CP -->|audit policy| AuditBackend
-    W1 --> Falco
-    W2 --> Falco
-    Falco --> Sidekick
-    W1 -.->|east-west trafic| PCAP
-    W2 -.->|east-west trafic| PCAP
-```
+![図3-1：実験ラボの全体アーキテクチャ](/images/fig-ch03-lab-architecture.png)
 
 **なぜself-managed Kubernetesを選ぶのか**：本書の実験の一部（第7章のContainer Escape、第6章の一部のPrivilege Escalation手法）は、コントロールプレーンやノードの設定を直接いじる必要があります。GKE/EKSのようなマネージドサービスではコントロールプレーンに手が届かないため、**再現実験はself-managed（kubeadmやkindベース）のクラスタで行い、マネージド環境との差分は都度注記する**方針にします。本番でマネージドKubernetesを使っている読者は、「この実験はマネージド環境では起きない／別の形で現れる」という注記を必ず確認してください。
 

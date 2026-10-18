@@ -1,0 +1,71 @@
+<svg viewBox="0 0 1300 580" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+  <defs>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrowCyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#06B6D4"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1300" height="580" fill="#FFFFFF"/>
+  <text x="650" y="36" font-size="20" font-weight="700" fill="#0F172A" text-anchor="middle">図3-1　実験ラボの全体アーキテクチャ</text>
+
+  <!-- Cluster group -->
+  <rect x="60" y="80" width="560" height="360" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="90" y="106" font-size="14" font-weight="600" fill="#0F172A">Kubernetesクラスタ（self-managed, 1 control-plane + 2 worker）</text>
+
+  <rect x="90" y="130" width="500" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="340" y="164" font-size="14" fill="#1E293B" text-anchor="middle">control-plane node</text>
+
+  <rect x="90" y="222" width="500" height="68" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="340" y="250" font-size="14" fill="#1E293B" text-anchor="middle">worker node 1</text>
+  <text x="340" y="268" font-size="12" fill="#1E293B" text-anchor="middle">（攻撃対象のワークロードを配置）</text>
+
+  <rect x="90" y="324" width="500" height="68" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="340" y="352" font-size="14" fill="#1E293B" text-anchor="middle">worker node 2</text>
+  <text x="340" y="370" font-size="12" fill="#1E293B" text-anchor="middle">（横展開の着地点）</text>
+
+  <!-- Observability group: AuditBackend first (same height as CP), then Falco (same height as workers), then tcpdump, then Sidekick -->
+  <rect x="680" y="80" width="560" height="440" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="710" y="106" font-size="14" font-weight="600" fill="#0F172A">観測スタック</text>
+
+  <rect x="710" y="130" width="500" height="56" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="960" y="156" font-size="14" fill="#1E293B" text-anchor="middle">Audit Log Webhookバックエンド</text>
+  <text x="960" y="174" font-size="12" fill="#1E293B" text-anchor="middle">（JSON Lines保存）</text>
+
+  <rect x="710" y="222" width="500" height="68" rx="8" fill="#FFFFFF" stroke="#06B6D4" stroke-width="2"/>
+  <text x="960" y="250" font-size="14" fill="#1E293B" text-anchor="middle">Falco + eBPFドライバ</text>
+  <text x="960" y="268" font-size="12" fill="#1E293B" text-anchor="middle">（全ノードにDaemonSet）</text>
+
+  <rect x="710" y="324" width="500" height="56" rx="8" fill="#FFFFFF" stroke="#06B6D4" stroke-width="2"/>
+  <text x="960" y="356" font-size="14" fill="#1E293B" text-anchor="middle">tcpdump / CNI flow log</text>
+
+  <rect x="710" y="412" width="500" height="68" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="960" y="440" font-size="14" fill="#1E293B" text-anchor="middle">Falcosidekick</text>
+  <text x="960" y="458" font-size="12" fill="#1E293B" text-anchor="middle">→ ローカルFile / Elasticsearch</text>
+
+  <!-- CP -> AuditBackend: same height, straight -->
+  <path d="M590,158 L710,158" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <rect x="610" y="136" width="90" height="18" fill="#FFFFFF" opacity="0.9"/>
+  <text x="614" y="150" font-size="11" fill="#1E293B">audit policy</text>
+
+  <!-- worker node 1 & 2 -> Falco: merged into one bus, since both feed the same DaemonSet -->
+  <path d="M590,246 L610,246 L610,356 L590,356" fill="none" stroke="#2563EB" stroke-width="2"/>
+  <path d="M610,256 L710,256" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- cluster (as a whole) -> tcpdump: aggregate east-west traffic capture, drawn as a single arrow from the group boundary -->
+  <path d="M620,352 L710,352" fill="none" stroke="#06B6D4" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowCyan)"/>
+  <rect x="440" y="296" width="170" height="18" fill="#FFFFFF" opacity="0.9"/>
+  <text x="444" y="310" font-size="11" fill="#1E293B">east-west traffic（両workerから）</text>
+
+  <!-- Falco -> Sidekick: via the right-side lane -->
+  <path d="M1210,250 L1230,250 L1230,446 L1210,446" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Legend -->
+  <rect x="60" y="500" width="1180" height="56" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="80" y1="520" x2="120" y2="520" stroke="#2563EB" stroke-width="2"/>
+  <text x="128" y="524" font-size="12" fill="#1E293B">通常のデータ収集・転送経路</text>
+  <line x1="400" y1="520" x2="440" y2="520" stroke="#06B6D4" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="448" y="524" font-size="12" fill="#1E293B">テレメトリ／監視用のキャプチャ経路</text>
+  <text x="80" y="544" font-size="11" fill="#64748B">※Falco・tcpdumpの枠はシアン＝ランタイム挙動を直接観測するコンポーネントを示す</text>
+</svg>

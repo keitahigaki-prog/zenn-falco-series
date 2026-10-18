@@ -1,0 +1,29 @@
+<svg viewBox="0 0 1400 200" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+  <defs>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1400" height="200" fill="#FFFFFF"/>
+  <text x="700" y="36" font-size="20" font-weight="700" fill="#0F172A" text-anchor="middle">図2-3　検知ルールからATT&amp;CK Navigatorのヒートマップまで</text>
+
+  <g font-size="13" fill="#1E293B" text-anchor="middle">
+    <rect x="30"  y="70" width="280" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="170" y="98">Falco検知ルール</text><text x="170" y="116" font-size="11">(tags: mitre_execution等)</text>
+
+    <rect x="370" y="70" width="280" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="510" y="98">ルール→テクニックID</text><text x="510" y="116" font-size="11">のマッピング表</text>
+
+    <rect x="710" y="70" width="280" height="70" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <text x="850" y="98">Navigator用</text><text x="850" y="116" font-size="11">レイヤーファイル(JSON)</text>
+
+    <rect x="1050" y="70" width="320" height="70" rx="8" fill="#06B6D4" stroke="#06B6D4" stroke-width="2"/>
+    <text x="1210" y="98" fill="#FFFFFF">ATT&amp;CK Navigator</text><text x="1210" y="116" font-size="11" fill="#FFFFFF">（ヒートマップ表示）</text>
+  </g>
+
+  <g stroke="#2563EB" stroke-width="2" fill="none" marker-end="url(#arrowBlue)">
+    <path d="M310,105 L370,105"/>
+    <path d="M650,105 L710,105"/>
+    <path d="M990,105 L1050,105"/>
+  </g>
+</svg>

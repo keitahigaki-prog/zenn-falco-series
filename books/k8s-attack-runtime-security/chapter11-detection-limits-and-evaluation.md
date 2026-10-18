@@ -19,17 +19,7 @@ title: "第11章：Runtime Detectionの限界と評価"
 
 Falcoはすべてのsyscallをカーネルからユーザー空間へ転送し、ルールエンジンで評価します。この処理には当然コストがかかります。本書のラボでは、**人工的にイベント量を変化させ、検知遅延がどう変わるかを測定**しました。
 
-```mermaid
-flowchart LR
-    Gen["負荷生成ツール<br/>（execve/openを高頻度で発生）"]
-    Driver["eBPFドライバ<br/>（ring buffer）"]
-    Engine["Falcoルールエンジン"]
-    Alert["アラート出力"]
-
-    Gen -->|syscallイベント| Driver
-    Driver -->|イベントストリーム| Engine
-    Engine -->|マッチ| Alert
-```
+![図11-1：イベント負荷と検知遅延の測定パイプライン](/images/fig-ch11-event-pipeline.png)
 
 ### 測定結果（イベント生成レート別の検知遅延）
 

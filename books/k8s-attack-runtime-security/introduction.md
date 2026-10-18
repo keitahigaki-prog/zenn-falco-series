@@ -23,32 +23,7 @@ Falcoを主役にしすぎないことも意識しています。主役は**攻�
 
 ## 本書の地図
 
-```mermaid
-flowchart TD
-    INTRO["はじめに：攻撃者視点で学ぶ理由"]
-
-    subgraph P1["Part 1 — 準備"]
-        C1["第1章：攻撃者から見たKubernetes"]
-        CM["第2章：MITRE ATT&CK for Containersの全体像"]
-        C2["第3章：攻撃・観測ラボの構築"]
-    end
-
-    subgraph P2["Part 2 — 攻撃チェーンの再現（MITRE ATT&CK for Containers）"]
-        C3["第4章：Initial Access"]
-        C4["第5章：Execution"]
-        C5["第6章：Privilege Escalation"]
-        C6["第7章：Container Escape"]
-        C7["第8章：Lateral Movement"]
-        C8["第9章：Credential Access / Exfiltration"]
-    end
-
-    subgraph P3["Part 3 — 観測と評価"]
-        C9["第10章：Falco・eBPFによる攻撃の追跡"]
-        C10["第11章：Runtime Detectionの限界と評価"]
-    end
-
-    INTRO --> C1 --> CM --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8 --> C9 --> C10
-```
+![図0-1：本書の地図](/images/fig-intro-roadmap.png)
 
 Part 1で実験の前提（なぜ攻撃者視点が必要か、攻撃チェーンをどう体系的に整理するか、どういうラボで検証するか）を固め、Part 2で8つの攻撃フェーズを20本の実験として再現し、Part 3でそれらをFalco/eBPF/Audit Logsで追跡・評価します。各章には対応する実験（Lab）番号を付けており、再現手順とログはGitHubリポジトリで公開します。
 

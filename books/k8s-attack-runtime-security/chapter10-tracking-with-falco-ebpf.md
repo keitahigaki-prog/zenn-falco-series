@@ -51,18 +51,7 @@ Falcoのログをタイムスタンプ順に並べると、次のようになり
 
 最後に、CNIフローログ（第8章）とクラウドAudit Trail（第9章）を加え、4つのデータソースを**タイムスタンプ＋送信元IP＋ServiceAccount名**で相関させます。
 
-```mermaid
-flowchart LR
-    F1["Falco: Reverse Shell<br/>(18:02, container=vulnerable-webapp)"]
-    F2["Falco: SA Token Read<br/>(18:25, container=over-privileged-sa-pod)"]
-    A1["Audit: list secrets<br/>(18:25, sa=over-privileged-sa, src=10.0.3.12)"]
-    N1["Flow: Pod間通信<br/>(10.0.3.12 -> 10.0.5.42)"]
-    A2["Audit: exec other-node-pod<br/>(19:28, sa=over-privileged-sa)"]
-    F3["Falco: Metadata接続<br/>(19:41, container=victim-pod)"]
-    C1["CloudTrail: AssumeRoleWithWebIdentity<br/>(19:41, src=203.0.113.50)"]
-
-    F1 --> F2 --> A1 --> N1 --> A2 --> F3 --> C1
-```
+![図10-1：4つのデータソースを横断した攻撃チェーンの相関再構築](/images/fig-ch10-correlation-timeline.png)
 
 4つのデータソースすべてを突き合わせて初めて、**Initial AccessからExfiltrationまでの一本の線**として攻撃チェーンが再構築できました。
 

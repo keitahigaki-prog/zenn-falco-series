@@ -73,18 +73,7 @@ Kubernetesクラスタへの攻撃経路は、ひとつではありません。�
 
 実験ラボを設計する前に、整理しておくべき重要な論点があります。それは**「どのレイヤーを」「何で観測するか」**です。
 
-```mermaid
-flowchart LR
-    subgraph Observed["観測できる範囲"]
-        direction TB
-        Falco["Falco（ノード上のeBPF）<br/>syscall: exec/open/connect等<br/>→ Pod内・ホスト内の挙動"]
-        Audit["Kubernetes Audit Logs<br/>→ APIサーバへの操作（kubectl等）"]
-        CloudTrail["クラウドAudit Trail<br/>（CloudTrail / Cloud Audit Logs）<br/>→ IAM・マネージドAPIの操作"]
-    end
-
-    Falco -.->|見えない| Audit
-    Audit -.->|見えない| CloudTrail
-```
+![図1-2：観測できる範囲と、その境界](/images/fig-ch01-observed-boundary.png)
 
 - **Falco（eBPF）が見えるのは、ノード上で実行されたsyscallだけ**です。コンテナ内でシェルを起動した、機密ファイルを読んだ、といった挙動は検知できますが、**マネージドKubernetes（GKE/EKS/AKS）のコントロールプレーン内部や、クラウドAPIへの操作はそもそも見えません**。これはマネージドサービスである以上、ユーザー側にkube-apiserverやetcdのホストへのアクセス権がないためです。
 - その空白を埋めるのが**Kubernetes Audit Logs**です。`kubectl exec`やRBAC変更など、APIサーバに対する操作はここに記録されます。ただしこれもAPIサーバを経由した操作に限られ、ノード内で直接起きたこと（例：コンテナ内のバイナリ実行）は記録されません。
@@ -96,15 +85,7 @@ flowchart LR
 
 本書を通して、次の攻撃チェーンを8つのフェーズ・20本の実験として再現します。
 
-```mermaid
-flowchart LR
-    IA["Initial Access<br/>(Lab 1-4)"] --> EX["Execution<br/>(Lab 5-6)"]
-    EX --> PE["Privilege<br/>Escalation<br/>(Lab 7-9)"]
-    PE --> CE["Container<br/>Escape<br/>(Lab 10-12)"]
-    CE --> LM["Lateral<br/>Movement<br/>(Lab 13-15)"]
-    LM --> CA["Credential Access<br/>/ Exfiltration<br/>(Lab 16-17)"]
-    CA --> TR["追跡・評価<br/>(第10-11章)"]
-```
+![図1-3：本書の実験ラボで扱う攻撃チェーン](/images/fig-ch01-attack-chain-overview.png)
 
 各実験は、次の3点をセットで記録します。
 

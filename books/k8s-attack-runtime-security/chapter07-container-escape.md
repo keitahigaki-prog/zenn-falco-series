@@ -18,20 +18,7 @@ title: "第7章：Container Escape - ホスト境界の突破"
 
 コンテナは「隔離された環境」ではなく、**Linux Namespace / cgroups / Capabilities によって制限された、同じカーネルを共有するプロセス**です。この前提を崩す条件は大きく3つに整理できます。
 
-```mermaid
-flowchart TD
-    Normal["通常のコンテナ<br/>（Namespace分離 + 最小Capabilities）"]
-    C1["特権コンテナ化<br/>（privileged: true）"]
-    C2["共有Namespace/Volume<br/>（hostPID, hostNetwork, hostPath）"]
-    C3["ランタイム自体の脆弱性<br/>（CVE悪用）"]
-
-    Normal -->|設定ミス| C1
-    Normal -->|設定ミス| C2
-    Normal -->|パッチ未適用| C3
-    C1 --> Escape["Host Escape 成立"]
-    C2 --> Escape
-    C3 --> Escape
-```
+![図7-1：コンテナランタイムの境界モデルが崩れる条件](/images/fig-ch07-escape-causes.png)
 
 第6章のLab 7（特権コンテナ・hostPath）もこの境界モデルの崩れの一種でしたが、本章ではさらに踏み込み、**既知のエスケープ手法の再現**と、**エスケープ後の初動**まで扱います。
 

@@ -1,0 +1,75 @@
+<svg viewBox="0 0 1700 320" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+  <defs>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#EF4444"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1700" height="320" fill="#FFFFFF"/>
+  <text x="850" y="34" font-size="20" font-weight="700" fill="#0F172A" text-anchor="middle">図10-1　4つのデータソースを横断した攻撃チェーンの相関再構築</text>
+
+  <g font-size="12" fill="#1E293B" text-anchor="middle">
+    <rect x="20" y="90" width="210" height="90" rx="8" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+    <rect x="20" y="90" width="210" height="8" fill="#EF4444"/>
+    <text x="125" y="118" font-weight="600">Falco</text>
+    <text x="125" y="138">Reverse Shell</text>
+    <text x="125" y="156" font-size="10">18:02 vulnerable-webapp</text>
+
+    <rect x="250" y="90" width="230" height="90" rx="8" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+    <rect x="250" y="90" width="230" height="8" fill="#EF4444"/>
+    <text x="365" y="118" font-weight="600">Falco</text>
+    <text x="365" y="138">SA Token Read</text>
+    <text x="365" y="156" font-size="10">18:25 over-privileged-sa-pod</text>
+
+    <rect x="500" y="90" width="230" height="90" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="500" y="90" width="230" height="8" fill="#2563EB"/>
+    <text x="615" y="118" font-weight="600">Audit Logs</text>
+    <text x="615" y="138">list secrets</text>
+    <text x="615" y="156" font-size="10">18:25 sa=over-privileged-sa</text>
+
+    <rect x="750" y="90" width="230" height="90" rx="8" fill="#FFFFFF" stroke="#06B6D4" stroke-width="2"/>
+    <rect x="750" y="90" width="230" height="8" fill="#06B6D4"/>
+    <text x="865" y="118" font-weight="600">Network</text>
+    <text x="865" y="138">Pod間通信</text>
+    <text x="865" y="156" font-size="10">10.0.3.12 → 10.0.5.42</text>
+
+    <rect x="1000" y="90" width="230" height="90" rx="8" fill="#FFFFFF" stroke="#2563EB" stroke-width="2"/>
+    <rect x="1000" y="90" width="230" height="8" fill="#2563EB"/>
+    <text x="1115" y="118" font-weight="600">Audit Logs</text>
+    <text x="1115" y="138">exec other-node-pod</text>
+    <text x="1115" y="156" font-size="10">19:28 sa=over-privileged-sa</text>
+
+    <rect x="1250" y="90" width="210" height="90" rx="8" fill="#FFFFFF" stroke="#EF4444" stroke-width="2"/>
+    <rect x="1250" y="90" width="210" height="8" fill="#EF4444"/>
+    <text x="1355" y="118" font-weight="600">Falco</text>
+    <text x="1355" y="138">Metadata接続</text>
+    <text x="1355" y="156" font-size="10">19:41 victim-pod</text>
+
+    <rect x="1480" y="90" width="200" height="90" rx="8" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
+    <rect x="1480" y="90" width="200" height="8" fill="#0F172A"/>
+    <text x="1580" y="118" font-weight="600">CloudTrail</text>
+    <text x="1580" y="138">AssumeRoleWith-</text>
+    <text x="1580" y="154">WebIdentity</text>
+    <text x="1580" y="170" font-size="10">19:41 src=203.0.113.50</text>
+  </g>
+
+  <g stroke="#EF4444" stroke-width="2" fill="none" marker-end="url(#arrowRed)">
+    <path d="M230,135 L250,135"/>
+    <path d="M480,135 L500,135"/>
+    <path d="M730,135 L750,135"/>
+    <path d="M980,135 L1000,135"/>
+    <path d="M1230,135 L1250,135"/>
+    <path d="M1460,135 L1480,135"/>
+  </g>
+
+  <!-- Legend -->
+  <rect x="20" y="230" width="1660" height="56" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <rect x="40" y="248" width="20" height="8" fill="#EF4444"/>
+  <text x="68" y="258" font-size="12" fill="#1E293B">Falco（ノード内syscall）</text>
+  <rect x="280" y="248" width="20" height="8" fill="#2563EB"/>
+  <text x="308" y="258" font-size="12" fill="#1E293B">Kubernetes Audit Logs（APIサーバ操作）</text>
+  <rect x="620" y="248" width="20" height="8" fill="#06B6D4"/>
+  <text x="648" y="258" font-size="12" fill="#1E293B">ネットワーク観測（CNIフローログ）</text>
+  <rect x="930" y="248" width="20" height="8" fill="#0F172A"/>
+  <text x="958" y="258" font-size="12" fill="#1E293B">クラウドAudit Trail（CloudTrail）</text>
+  <text x="40" y="276" font-size="11" fill="#64748B">時系列順に並べると、4つのデータソースをまたいで初めて一本の攻撃チェーンとして再構築できる（第10章・研究B）</text>
+</svg>

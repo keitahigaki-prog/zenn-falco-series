@@ -1,0 +1,78 @@
+<svg viewBox="0 0 1000 1040" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans JP','Inter',sans-serif">
+  <defs>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2563EB"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="1040" fill="#FFFFFF"/>
+  <text x="500" y="38" font-size="22" font-weight="700" fill="#0F172A" text-anchor="middle">図0-1　本書の地図</text>
+
+  <!-- Part band backgrounds -->
+  <rect x="60" y="150" width="880" height="214" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="90" y="178" font-size="14" font-weight="600" fill="#0F172A">Part 1 — 準備</text>
+
+  <rect x="60" y="400" width="880" height="400" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="90" y="428" font-size="14" font-weight="600" fill="#0F172A">Part 2 — 攻撃チェーンの再現（MITRE ATT&amp;CK for Containers）</text>
+
+  <rect x="60" y="836" width="880" height="150" rx="10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <text x="90" y="864" font-size="14" font-weight="600" fill="#0F172A">Part 3 — 観測と評価</text>
+
+  <!-- INTRO -->
+  <rect x="350" y="70" width="300" height="50" rx="8" fill="#0F172A" stroke="#0F172A" stroke-width="1.5"/>
+  <text x="500" y="100" font-size="14" fill="#FFFFFF" text-anchor="middle">はじめに：攻撃者視点で学ぶ理由</text>
+  <path d="M500,120 L500,148" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Part1 nodes -->
+  <rect x="90" y="196" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="220" y="226" font-size="13" fill="#1E293B" text-anchor="middle">第1章：攻撃者から見たKubernetes</text>
+  <rect x="370" y="196" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="500" y="226" font-size="13" fill="#1E293B" text-anchor="middle">第2章：MITRE ATT&amp;CK for Containers</text>
+  <rect x="650" y="196" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="780" y="226" font-size="13" fill="#1E293B" text-anchor="middle">第3章：攻撃・観測ラボの構築</text>
+
+  <path d="M350,221 L370,221" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M630,221 L650,221" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- transition Part1 -> Part2 -->
+  <path d="M780,246 L780,270 L220,270 L220,398" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Part2 nodes: 2 rows x3 -->
+  <rect x="90" y="446" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="220" y="476" font-size="13" fill="#1E293B" text-anchor="middle">第4章：Initial Access</text>
+  <rect x="370" y="446" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="500" y="476" font-size="13" fill="#1E293B" text-anchor="middle">第5章：Execution</text>
+  <rect x="650" y="446" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="780" y="476" font-size="13" fill="#1E293B" text-anchor="middle">第6章：Privilege Escalation</text>
+  <path d="M350,471 L370,471" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M630,471 L650,471" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M780,496 L780,520 L90,520" fill="none" stroke="#2563EB" stroke-width="2"/>
+
+  <rect x="90" y="546" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="220" y="576" font-size="13" fill="#1E293B" text-anchor="middle">第7章：Container Escape</text>
+  <rect x="370" y="546" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="500" y="576" font-size="13" fill="#1E293B" text-anchor="middle">第8章：Lateral Movement</text>
+  <rect x="650" y="546" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="780" y="568" font-size="13" fill="#1E293B" text-anchor="middle">第9章：Credential Access</text>
+  <text x="780" y="584" font-size="13" fill="#1E293B" text-anchor="middle">/ Exfiltration</text>
+
+  <path d="M90,521 L90,546" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M350,571 L370,571" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+  <path d="M630,571 L650,571" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- transition Part2 -> Part3 -->
+  <path d="M780,596 L780,620 L220,620 L220,834" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Part3 nodes -->
+  <rect x="90" y="882" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="220" y="905" font-size="13" fill="#1E293B" text-anchor="middle">第10章：Falco・eBPFに</text>
+  <text x="220" y="921" font-size="13" fill="#1E293B" text-anchor="middle">よる攻撃の追跡</text>
+  <rect x="370" y="882" width="260" height="50" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <text x="500" y="905" font-size="13" fill="#1E293B" text-anchor="middle">第11章：Runtime Detection</text>
+  <text x="500" y="921" font-size="13" fill="#1E293B" text-anchor="middle">の限界と評価</text>
+  <path d="M350,907 L370,907" fill="none" stroke="#2563EB" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+  <!-- Legend -->
+  <rect x="60" y="1000" width="880" height="30" rx="6" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1"/>
+  <line x1="80" y1="1015" x2="120" y2="1015" stroke="#2563EB" stroke-width="2"/>
+  <text x="128" y="1019" font-size="12" fill="#1E293B">読み進める順序（実線＝章の連なり）</text>
+</svg>

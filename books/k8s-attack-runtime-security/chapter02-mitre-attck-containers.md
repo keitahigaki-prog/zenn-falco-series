@@ -23,15 +23,7 @@ MITRE ATT&CK（Adversarial Tactics, Techniques, and Common Knowledge）は、非
 
 ATT&CKの最大の特徴は、**攻撃を「何を使ったか（マルウェアの種類等）」ではなく「何をしたか（振る舞い）」で分類する**ことです。これは本書がFalcoによる振る舞いベースの検知を重視する姿勢と一致します。マルウェアのハッシュ値や既知の悪性ドメインは陳腐化が早い一方、「特権コンテナを使ってホストに書き込む」「ServiceAccountトークンを読み取る」といった**振る舞いのパターンは、ツールが変わっても再利用され続けます**。
 
-```mermaid
-flowchart TD
-    MITRE["MITRE ATT&CK"]
-    MITRE --> Ent["Enterprise ATT&CK<br/>（Windows/Linux/macOS/Cloud/...）"]
-    MITRE --> Mobile["Mobile ATT&CK"]
-    MITRE --> ICS["ICS ATT&CK"]
-    Ent --> Containers["Containers Matrix<br/>（2021年追加）"]
-    Containers --> K8s["本書が扱う範囲<br/>Kubernetes / Docker"]
-```
+![図2-1：MITRE ATT&CKの全体構成とContainers Matrixの位置づけ](/images/fig-ch02-mitre-hierarchy.png)
 
 Containers Matrixは、Enterprise ATT&CKのサブセットという位置づけで**2021年に追加**されました。背景には、コンテナとKubernetesの普及に伴い、**既存のEnterprise Matrixだけでは説明しきれない、コンテナ特有の攻撃手法**（例：特権コンテナの悪用、ServiceAccountトークンの窃取）が急増したことがあります。
 
@@ -57,16 +49,7 @@ Containers Matrixは、攻撃チェーンの段階を表す**戦術（Tactics）
 
 Containers Matrixの各手法には、`T####`という一意のIDが振られています。さらに、手法によっては`.00#`という**サブテクニック**で細分化されています。
 
-```mermaid
-flowchart LR
-    T1611["T1611<br/>Escape to Host<br/>(戦術: Privilege Escalation)"]
-    T1552["T1552<br/>Unsecured Credentials<br/>(戦術: Credential Access)"]
-    T1552_007["T1552.007<br/>Container API<br/>(サブテクニック)"]
-    T1552_005["T1552.005<br/>Cloud Instance Metadata API<br/>(サブテクニック)"]
-
-    T1552 --> T1552_007
-    T1552 --> T1552_005
-```
+![図2-2：テクニックIDとサブテクニックの関係](/images/fig-ch02-technique-ids.png)
 
 例えば本書のLab 16（第9章）で扱った「クラウドメタデータAPI経由のクレデンシャル窃取」は`T1552.005`というサブテクニックに対応します。同じ`T1552`（Unsecured Credentials）という大分類の中でも、**「どこから認証情報を盗むか」によってサブテクニックが分かれている**ため、検知ルールを設計する際にも「このルールはT1552のどのサブテクニックに効くのか」まで意識すると、カバレッジの抜け漏れが把握しやすくなります。
 
@@ -76,15 +59,7 @@ flowchart LR
 
 MITREは、ATT&CK Matrixをインタラクティブに可視化する**ATT&CK Navigator**というツールを無償で提供しています。自組織の検知ルールがどのテクニックをカバーしているかを、マトリクス上にヒートマップとして表示できます。
 
-```mermaid
-flowchart LR
-    Rules["Falco検知ルール<br/>(tags: mitre_execution等)"]
-    Mapping["ルール→テクニックIDの<br/>マッピング表"]
-    Layer["Navigator用レイヤーファイル<br/>(JSON)"]
-    Navigator["ATT&CK Navigator<br/>（ヒートマップ表示）"]
-
-    Rules --> Mapping --> Layer --> Navigator
-```
+![図2-3：検知ルールからATT&CK Navigatorのヒートマップまで](/images/fig-ch02-navigator-pipeline.png)
 
 本書の第10章（Falco・eBPFによる攻撃の追跡）で行う「検知カバレッジの比較」も、本質的には**このヒートマップを手作業で再現している**ことに相当します。実務では、検知ルールにMITREタグを埋め込み、そのタグを集計してNavigator用のレイヤーファイルを自動生成する運用がよく行われます。
 
