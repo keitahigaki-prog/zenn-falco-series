@@ -84,3 +84,10 @@ Runtime Securityは「最後の砦」ですが、**唯一の砦ではありま�
 前作『Falco実践シリーズ』が「どう使うか」を扱ったのに対し、本書は「使ってみた結果、どこまで見え、どこが見えないのか」を実験で確かめました。次に手を伸ばすとすれば、**今回の実験ラボをより大規模なクラスタで再現し、研究Cの閾値が実運用規模でどう変化するか**を検証することになるでしょう。それはまた別の機会に。
 
 ここまで読んでいただき、ありがとうございました。
+
+## 参考資料
+
+- [Falco公式ドキュメント](https://falco.org/docs/)
+- [Falco Metrics（falco.n_evts_dropped等）](https://falco.org/docs/metrics/)
+- [eBPFドライバについて（公式ドキュメント）](https://falco.org/docs/event-sources/drivers/)
+- [Pod Security Standards（公式ドキュメント）](https://kubernetes.io/docs/concepts/security/pod-security-standards/)

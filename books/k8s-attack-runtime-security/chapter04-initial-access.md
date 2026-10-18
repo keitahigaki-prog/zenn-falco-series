@@ -131,3 +131,10 @@ kubectl get secrets -A
 | 4 | kubeconfig漏洩 | - | ✅ 検知（ただし異常判定には追加の文脈が必要） | APIサーバ |
 
 4本の実験だけでも、**「ノード内で完結する攻撃」「APIサーバ経由の攻撃」「どちらでもない空白地帯」**という3パターンが早速現れました。次章では、侵入後にコンテナ内部で何が実行されるか（Execution）を見ていきます。
+
+## 参考資料
+
+- [MITRE ATT&CK T1190: Exploit Public-Facing Application](https://attack.mitre.org/techniques/T1190/)
+- [Kubelet authentication/authorization（公式ドキュメント）](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/)
+- [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)
+- [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)

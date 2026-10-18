@@ -112,3 +112,11 @@ ptrace_test --pid=<host-process-pid>
 | 9 | Capabilities悪用 | ✅ 付与時点で検知 | - | 構成時点の検知が効果的 |
 
 権限昇格フェーズでは、**「コンテナの中で完結する昇格」はFalcoで、「クラスタAPIに波及する昇格」はAudit Logsで**という分担がより鮮明になりました。次章では、ついにコンテナの境界そのものを突破する「Container Escape」に進みます。
+
+## 参考資料
+
+- [MITRE ATT&CK T1611: Escape to Host](https://attack.mitre.org/techniques/T1611/)
+- [MITRE ATT&CK T1552.007: Container API](https://attack.mitre.org/techniques/T1552/007/)
+- [Pod Security Standards（公式ドキュメント）](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- [Using RBAC Authorization（公式ドキュメント）](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [capabilities(7) — Linux manual page](https://man7.org/linux/man-pages/man7/capabilities.7.html)

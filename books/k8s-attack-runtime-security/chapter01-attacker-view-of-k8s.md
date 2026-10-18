@@ -105,3 +105,12 @@ Kubernetesクラスタへの攻撃経路は、ひとつではありません。�
 こうした線引きをする理由は、**「攻撃者視点」という言葉が指す範囲を無限に広げると、検証も検知も曖昧になる**からです。本書は、**侵入が成立した後、Kubernetesというプラットフォーム特有の手口に対して、観測技術がどこまで追従できるか**という一点に絞って検証します。
 
 次章では、ここまで触れてきた攻撃チェーンを体系的に整理するフレームワーク——**MITRE ATT&CK for Containers**を詳しく見ていきます。
+
+## 参考資料
+
+- [Tesla cloud resources are hacked to run cryptocurrency-mining malware - Ars Technica](https://arstechnica.com/information-technology/2018/02/tesla-cloud-resources-are-hacked-to-run-cryptocurrency-mining-malware/)
+- [Capital One data theft impacts 106M people - Krebs on Security](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/)
+- [Kubelet authentication/authorization（公式ドキュメント）](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/)
+- [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
+- [AWS: Configuring the instance metadata service（IMDSv2）](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html)
+- [CNCF Cloud Native Security Whitepaper](https://github.com/cncf/tag-security/blob/main/security-whitepaper/v2/cloud-native-security-whitepaper.md)

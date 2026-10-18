@@ -100,3 +100,11 @@ DNS exfiltrationは、**単発のクエリでは異常に見えません**が、
 | 17 | DNS exfiltration | ✅ クエリパターンで検知 | ❌ 記録されない | Falcoのみが頼りになる経路もある |
 
 第4章から本章まで、8フェーズ・17本の実験を通して、**Falco・Kubernetes Audit Logs・クラウドAudit Trail・ネットワーク観測**という4つの観測手段それぞれの得意分野と空白地帯が見えてきました。残り3本の実験（Lab 18〜20）と、これまでの結果の横断分析は次章で行います。
+
+## 参考資料
+
+- [MITRE ATT&CK T1552.005: Cloud Instance Metadata API](https://attack.mitre.org/techniques/T1552/005/)
+- [MITRE ATT&CK T1041: Exfiltration Over C2 Channel](https://attack.mitre.org/techniques/T1041/)
+- [AWS: Configuring the instance metadata service（IMDSv2）](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html)
+- [GKE: Workload Identity（公式ドキュメント）](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+- [AWS CloudTrail User Guide](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)

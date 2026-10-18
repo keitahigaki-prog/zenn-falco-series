@@ -101,3 +101,10 @@ kubectl --token=$STOLEN_TOKEN exec -it other-node-pod -- sh
 | 15 | ノード間移動（exec悪用） | △ Pod内の挙動のみ | ✅ Audit Logsでexec操作を記録 | APIサーバ経由の移動はAudit Logs必須 |
 
 横展開のフェーズでは、**単一のデータソースだけで攻撃チェーン全体を追うことはできない**ことがはっきりしました。次章では、横展開の先で何が狙われるのか——Credential AccessとExfiltrationを扱います。
+
+## 参考資料
+
+- [MITRE ATT&CK T1046: Network Service Discovery](https://attack.mitre.org/techniques/T1046/)
+- [MITRE ATT&CK T1021: Remote Services](https://attack.mitre.org/techniques/T1021/)
+- [Calico Flow Logs（公式ドキュメント）](https://docs.tigera.io/calico/latest/visibility/elastic/flow)
+- [kubectl exec（公式ドキュメント）](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#exec)

@@ -97,3 +97,10 @@ Falcoは`memfd_create`というsyscall自体をフックしているため、**�
 | 6 | ファイルレス実行（memfd_create） | ✅ カスタムルールで検知 | syscallレベルでの実行捕捉（ディスク痕跡に依存しない） |
 
 Execution段階は、**本書で扱う8フェーズの中でもFalcoが最も強みを発揮する領域**であることが分かりました。次章では、侵入したコンテナの中から一歩外へ出ようとする「Privilege Escalation（権限昇格）」を扱います。
+
+## 参考資料
+
+- [MITRE ATT&CK T1059: Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)
+- [MITRE ATT&CK T1620: Reflective Code Loading](https://attack.mitre.org/techniques/T1620/)
+- [memfd_create(2) — Linux manual page](https://man7.org/linux/man-pages/man2/memfd_create.2.html)
+- [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)

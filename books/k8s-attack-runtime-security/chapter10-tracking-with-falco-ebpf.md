@@ -90,3 +90,10 @@ Lab 1〜20の結果を、**標準ルールのみ**の場合と、**本書で追�
 **この分類が示すのは、「ルールを足せば足すほど検知率が上がる」という単純な話ではない**ということです。Lab 3のような「予防でしか塞げない穴」に検知ルールを頑張って書こうとするのは筋が悪く、Lab 16後半のような「別のデータソースが主役になるべき領域」にFalcoのカスタムルールを追加しようとするのも非効率です。**検知のカバレッジを上げる努力は、どのデータソースの責任範囲かを見極めた上で投下する必要があります。**
 
 次章では、ここまで「検知できるか／できないか」という二択で見てきた視点を離れ、**検知の精度と、監視の負荷・遅延・リソース消費のトレードオフ**（研究C）を扱います。
+
+## 参考資料
+
+- [ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/)
+- [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)
+- [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
+- [AWS CloudTrail User Guide](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)

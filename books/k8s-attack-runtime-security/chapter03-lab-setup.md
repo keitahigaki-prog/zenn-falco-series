@@ -144,3 +144,12 @@ calicoctl patch felixconfiguration default --patch \
 ---
 
 次章からは、いよいよ実際の攻撃チェーンの再現に入ります。まずはInitial Access——攻撃者がコンテナに最初の足がかりを得るところからです。
+
+## 参考資料
+
+- [Falco Helm Charts（falcosecurity/charts）](https://github.com/falcosecurity/charts)
+- [Falco公式ドキュメント](https://falco.org/docs/)
+- [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
+- [Falcosidekick（falcosecurity/falcosidekick）](https://github.com/falcosecurity/falcosidekick)
+- [Pod Security Standards（公式ドキュメント）](https://kubernetes.io/docs/concepts/security/pod-security-standards/)
+- [kind（Kubernetes IN Docker）](https://kind.sigs.k8s.io/)
