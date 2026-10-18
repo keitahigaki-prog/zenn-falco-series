@@ -23,7 +23,9 @@ title: "第3章：攻撃・観測ラボの構築"
 
 **なぜself-managed Kubernetesを選ぶのか**：本書の実験の一部（第7章のContainer Escape、第6章の一部のPrivilege Escalation手法）は、コントロールプレーンやノードの設定を直接いじる必要があります。GKE/EKSのようなマネージドサービスではコントロールプレーンに手が届かないため、**再現実験はself-managed（kubeadmやkindベース）のクラスタで行い、マネージド環境との差分は都度注記する**方針にします。本番でマネージドKubernetesを使っている読者は、「この実験はマネージド環境では起きない／別の形で現れる」という注記を必ず確認してください。
 
-ラボはクラウド（コスト最適化のため最小構成）とローカル（kind）の両方で動くように構築します。本書のサンプルコードはどちらでも再現できるよう、Terraform（クラウド版）とkind config（ローカル版）の両方をリポジトリに含めます。
+ラボはクラウド（コスト最適化のため最小構成）とローカル（kind）の両方で動くように構築します。本書の実験はすべて、ローカル（kind、Docker Desktop上）で実機検証済みです。再現用のコード一式は[k8s-attack-runtime-security-lab](https://github.com/keitahigaki-prog/k8s-attack-runtime-security-lab)として公開しています。
+
+**kindクラスタに特有の注意点（実機検証で判明）**: kindの各"ノード"は、独立したVMやベアメタルではなく、**同一のDocker Desktop VM（同じLinuxカーネル）上で動くコンテナ**です。そのため、**あるkindクラスタのFalcoが、同じDocker Desktopホスト上で動く別のkindクラスタのsyscallまで観測してしまう**ことが実機で確認できました。ノードごとに正しいPod/コンテナメタデータが付くのは「そのコンテナが実際に動いているノード」のFalcoだけで、他のFalcoインスタンスのログにも同じイベントが`k8s_pod_name=<NA>`という形で混入します。複数のkindクラスタを同じマシンで並行運用している場合は、ログを**解決済みメタデータの有無でフィルタする**運用が必須です（本番の、ノードが物理的/仮想的に分離されたクラスタではこの問題は起きません）。
 
 ## 脆弱なワークロードの用意
 
@@ -31,9 +33,13 @@ title: "第3章：攻撃・観測ラボの構築"
 
 | ワークロード | 脆弱性の種類 | 主に使う章 |
 |---|---|---|
-| `vulnerable-webapp` | 既知CVEを含む脆弱なWebアプリ（コマンドインジェクション可能） | 第4章 |
-| `misconfigured-pod` | 特権モード・hostPath・過剰なCapabilities | 第5・6章 |
-| `over-privileged-sa` | クラスタ全体に近い権限を持つServiceAccountを紐付け | 第5・7・8章 |
+| `vulnerable-webapp` | `/ping?host=`パラメータをシェルに直接渡すコマンドインジェクション（Python自作、既知CVEの模倣ではなく最小構成の脆弱コード） | 第4章 |
+| `misconfigured-pod` | 特権モード・hostPath | 第6・7章 |
+| `over-privileged-sa-pod` / `deploy-bot` | Secret取得・（後に`pods/exec`も追加する）過剰権限ServiceAccountを紐付け | 第6・8章 |
+| `cap-abuse-pod` | `CAP_SYS_PTRACE`を追加 | 第6章 |
+| `host-pid-pod` / `host-pid-ptrace-pod` | `hostPID: true`（単体、および`CAP_SYS_PTRACE`併用） | 第7章 |
+| `debug-service` | 認証なしでPOST bodyをシェル実行する模擬デバッグサービス | 第8章 |
+| `c2-server` / `attacker-listener` | クラスタ内に自前で立てる攻撃者側インフラ（固定ClusterIP） | 第4・5章 |
 
 ```yaml
 # misconfigured-pod（例）: 意図的に特権コンテナ化
@@ -111,9 +117,9 @@ rules:
 
 ## ネットワーク観測（CNI/pcap）の下準備
 
-第8章のLateral Movement実験では、クラスタ内ネットワークの挙動を観測する必要があります。本書では次の2系統を併用します。
+第8章のLateral Movement実験では、クラスタ内ネットワークの挙動を観測する必要があります。本書では次の2系統を候補に挙げます。
 
-- **CNIのフローログ**（Calicoを使う場合は`FelixConfiguration`でフローログを有効化）
+- **CNIのフローログ**（Calico等、フローログ機能を持つCNIを使う場合は`FelixConfiguration`で有効化）
 - **ノード上での`tcpdump`によるパケットキャプチャ**（ピンポイントの実験でのみ使用し、常時稼働はさせません）
 
 ```bash
@@ -122,7 +128,7 @@ calicoctl patch felixconfiguration default --patch \
   '{"spec": {"flowLogsFileEnabled": true, "flowLogsFileIncludeLabels": true}}'
 ```
 
-常時フルパケットキャプチャはディスクを圧迫するため、本書では「攻撃実験の実行中だけ」`tcpdump`を起動するスクリプトをリポジトリに用意し、実験ごとにオン/オフを明示します。
+**実機検証での注記**: 本書のkindラボは既定のCNI（kindnet）を使っており、**Calicoは導入していません**。そのため第8章の実験では、CNIフローログではなくtcpdump、およびFalco自体のsyscall観測だけで検証しています。Calicoのような高機能CNIへの切り替えは、ネットワーク観測を本格的に使い込みたい場合の発展課題として別途検証してください。
 
 ## 実験の記録方法
 

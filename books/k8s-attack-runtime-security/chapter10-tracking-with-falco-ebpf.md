@@ -7,87 +7,113 @@ title: "第10章：Falco・eBPFによる攻撃の追跡"
 ## この章で学ぶこと
 
 - 研究B：syscallだけで攻撃経路を最初から最後まで追跡できるのか
-- Kubernetes Audit Logs・ネットワーク情報との突合で何が埋まるか
-- 研究A：Lab 1〜17に、残り3本の相関実験（Lab 18〜20）を加えた20シナリオ全体の検知カバレッジ
-- 未検知だったケースの原因分類
+- Kubernetes Audit Logsとの突合で何が埋まり、何が埋まらないか
+- 研究A：Lab 1〜17の実機検証結果を集計した検知カバレッジ
+- 未検知だったケースの原因分類（本文執筆時の想定より多様だった）
 
-第4章から第9章まで、8フェーズ・17本の実験を個別に見てきました。本章ではそれらを横断し、**「ひとつの攻撃チェーン全体」をsyscallだけで追えるのか**という問いに正面から取り組みます。
+第4章から第9章まで、8フェーズ・17本の実験を個別に見てきました。本章ではそれらを横断し、**「ひとつの攻撃チェーン全体」をsyscallだけで追えるのか**という問いに正面から取り組みます。Lab 18〜20は新しい攻撃ではなく、**Lab 1〜17で実際に収集した実ログを使った再分析**です。
 
 ---
 
 ## 研究B：Syscallだけで攻撃経路を追跡できるのか
 
-### Lab 18: 攻撃チェーン全体の再構築（Falcoログのみ）
+### Lab 18: Falcoログのみでの再構築を試みる
 
-- **前提**: Lab 1（Initial Access）→ Lab 5（Execution）→ Lab 8（Privilege Escalation）→ Lab 16（Credential Access）という一連の攻撃チェーンを連続して実行し、**Falcoのログだけ**で攻撃の流れを再構築できるか検証する
-
-Falcoのログをタイムスタンプ順に並べると、次のようになります。
+`vulnerable-webapp`（container_id=`115c63fa4162`）に対して行った一連の操作——第4章のコマンドインジェクション→第5章のリバースシェル→第9章のメタデータAPI接続——のFalcoログだけを時系列に並べます。
 
 ```
-17:42:03 Unexpected shell in web container (vulnerable-webapp)
-18:02:44 Reverse Shell Detected (vulnerable-webapp)
-18:25:40 ServiceAccount Token Read (over-privileged-sa-pod)
-19:41:18 Contact Cloud Metadata Service From Container (victim-pod)
+[Lab1] 11:03:09 Critical Shell spawned without a tty (container_id=115c63fa4162)
+[Lab5] 11:12:23 Notice  Redirect stdout/stdin to network connection (container_id=115c63fa4162)
+[Lab16]12:00:06 Critical Contact cloud metadata service from container (container_id=115c63fa4162)
 ```
 
-一見すると時系列順のストーリーに見えますが、重大な欠落があります。**各イベントが「同じコンテナ／同じ攻撃者による一連の行動」であることを示す明示的な相関キーがありません**。`container.id`は分かりますが、Lab 8とLab 16で別々のPod名が使われている場合、**それらが同一の侵害チェーンの延長であることはFalcoのログだけからは分かりません**。
+**`container_id`が共通しているため、この3つが「同一コンテナでの一連の行動」であることはFalcoログだけでも追跡できました。** これはLab 1〜17を通して、攻撃対象のコンテナを使い回していたために成立した相関で、**同一コンテナ内で完結する攻撃チェーンであればFalcoログ単体でもcontainer_idを軸に再構築できる**ことを示しています。
 
-**考察**: syscallベースの検知は「ある瞬間に何が起きたか」の精度は高い一方、**「複数のイベントをまたぐストーリー」の再構築は苦手**です。これはFalcoの設計上の限界というより、**イベント単位の検知エンジンに共通する性質**です。
+一方、第6章のLab 8（`over-privileged-sa-pod`、container_id=`2f472e138129`）は**別のコンテナ**で実行しており、Falcoのcontainer_idだけでは、Lab 1→5→16の流れと**繋がりません**。
 
 ### Lab 19: Kubernetes Audit Logsとの突合
 
-同じ攻撃チェーンに、Audit Logsを重ねます。
+Lab 8の「ServiceAccountトークン奪取→Secret一覧取得」は、`system:serviceaccount:lab:deploy-bot`というユーザー名でAudit Logsに記録されています。
 
+```json
+{"verb": "list", "user": {"username": "system:serviceaccount:lab:deploy-bot", ...,
+  "extra": {"authentication.kubernetes.io/pod-name": ["over-privileged-sa-pod"]}},
+ "objectRef": {"resource": "secrets", "namespace": "kube-system"}}
 ```
-18:25:41 [Audit] serviceaccount "over-privileged-sa" list secrets
-19:28:09 [Audit] serviceaccount "over-privileged-sa" exec "other-node-pod"
-```
 
-`user.username`というキーで、**Falcoでは見えなかった「同一ServiceAccountによる一連の操作」が繋がります**。Falcoのイベントにある`container.id`とAudit Logsの`sourceIPs`を突き合わせることで、「どのPodから出たトークンが、どのAPI操作に使われたか」の相関が取れるようになりました。
+ここで相関キーが**container_idからserviceaccount名（`deploy-bot`）に切り替わります**。第8章Lab 15（ノード間移動）のexec操作も同じ`deploy-bot`のトークンで行われているため、Audit Logsの`user.username`を軸にすれば、**Lab 4（漏洩）→Lab 8（API悪用）→Lab 15（ノード間移動）**の3本を1本の線としてつなげられます。
 
-**考察**: Audit Logsを加えることで、**「コンテナの中」と「APIサーバでの操作」という2つの時系列が、ServiceAccount名という共通キーで繋がる**ことが分かりました。ただし、これでもまだ**クラウドAPI層での操作（Lab 16後半）は繋がっていません**。
+**しかし、Falcoのcontainer_id系列（Lab1→5→16）とAudit Logsのserviceaccount系列（Lab4→8→15）は、互いに独立した2本の線のままで、これだけでは交わりません。**
 
-### Lab 20: ネットワーク情報を加えたフル相関
+### Lab 20: 相関キーを変えながら全体をつなぐ
 
-最後に、CNIフローログ（第8章）とクラウドAudit Trail（第9章）を加え、4つのデータソースを**タイムスタンプ＋送信元IP＋ServiceAccount名**で相関させます。
+実際には、2つの系列は「攻撃者が同一人物である」という前提以外に、ログ上の直接的な結合キーを持ちません。本ラボ規模では両系列をまたぐ明示的な操作（例：Lab 1の侵入先からLab 8のSAトークンを盗む、という具体的な一手）を行っていないため、**この2系列を1本につなぐログ上の証拠は存在しませんでした**。
 
 ![図10-1：4つのデータソースを横断した攻撃チェーンの相関再構築](/images/fig-ch10-correlation-timeline.png)
 
-4つのデータソースすべてを突き合わせて初めて、**Initial AccessからExfiltrationまでの一本の線**として攻撃チェーンが再構築できました。
+図に示した4データソースの統合は概念図であり、本ラボで実機検証できたのは**Falco**と**Kubernetes Audit Logs**の2つのみです。本書が挙げた残り2つのデータソースは、今回の検証範囲では確認できませんでした。
 
-**研究Bの結論**: **syscallだけでは、攻撃チェーン全体を追跡することはできません。** Falcoは各フェーズの「個々の異常な振る舞い」を高精度で捉えますが、フェーズをまたぐ相関には、少なくともKubernetes Audit Logs（APIサーバ境界）とクラウドAudit Trail（クラウドAPI境界）、場合によってはネットワーク観測（横展開の経路）が必要です。これは第1章で提示した「3つの境界線」の存在を、実験で裏付ける結果になりました。
+- **ネットワーク観測（CNI flow log）**: kindクラスタはkindnet CNI（Calicoではない）のため未検証（第8章の注記を参照）
+- **クラウドAudit Trail（CloudTrail等）**: ローカルkindラボには実クラウドが存在しないため検証不可（第9章の注記を参照）
+
+**研究Bの結論（訂正版）**: 当初の結論「syscallだけでは攻撃チェーン全体を追跡できない」自体は実機でも支持されますが、**理由の説明が変わります**。本文は「データソースが足りないから繋がらない」という説明でしたが、実際には**「データソースを足しても、相関キーが境界ごとに変わるため、自動的には繋がらない」**という、より深い問題であることが分かりました。
+
+> **相関のための「キー」は固定ではなく、攻撃がどの境界を越えるかによって変わる**（同一コンテナ内＝container_id、認証情報の窃取と再利用＝identity、ネットワーク越しの移動＝送信元/宛先IP）。**キーが変わる境界をまたぐ瞬間、それまでの文脈は失われ、分析者が手動で「同一攻撃者による一連の行動」と仮定して繋ぎ直す必要があります。**
+
+4本すべてのデータソースを使った完全な実証は、実クラウド環境・Calico等の高機能CNIを使う発展的な検証として今後の課題とします。
 
 ---
 
-## 研究A：20シナリオの検知カバレッジ比較
+## 研究A：検知カバレッジの実機集計
 
-Lab 1〜20の結果を、**標準ルールのみ**の場合と、**本書で追加したカスタムルール**を含む場合とで比較しました。
+Lab 1〜17の実機結果に基づく、最終的な検知カバレッジです。本文執筆時の想定（架空のルール名を多く含んでいました）ではなく、すべて実機で確認した結果のみを集計しています。
 
-| フェーズ | シナリオ数 | 標準ルールのみで検知 | カスタムルール込みで検知 | 完全に観測の空白 |
+| Lab | フェーズ | 攻撃は成立したか | 標準ルールで検知 | カスタムルールで検知 |
 |---|---|---|---|---|
-| Initial Access | 4 | 1 | 2 | 1（Lab 3: kubelet API） |
-| Execution | 2 | 1 | 2 | 0 |
-| Privilege Escalation | 3 | 2 | 3 | 0 |
-| Container Escape | 3 | 2 | 3 | 0 |
-| Lateral Movement | 3 | 1 | 2 | 0（ただし1本は精度が低い） |
-| Credential Access / Exfiltration | 2 | 1 | 2 | 0 |
-| 横断相関（Lab 18-20） | 3 | - | - | 相関は別データソース必須 |
-| **合計** | **20** | **8 / 20 (40%)** | **14 / 20 (70%)** | **1 / 20 (5%)** |
+| 1 | Initial Access | ✅ | ❌ | ✅（2回の失敗を経て） |
+| 2 | Initial Access | ✅ | ❌ | ✅（1回目は失敗） |
+| 3 | Initial Access | ❌（現代のデフォルトで対策済み） | N/A | N/A |
+| 4 | Initial Access | ✅ | ✅（Audit Logs） | - |
+| 5 | Execution | ✅ | ✅ | - |
+| 6 | Execution | ✅ | ❌ | ✅ |
+| 7 | Privilege Escalation | ✅ | ✅（部分） | ✅（補強） |
+| 8 | Privilege Escalation | ✅ | ✅（部分）＋Audit Logs | - |
+| 9 | Privilege Escalation | ✅ | ✅ | - |
+| 10 | Container Escape | ✅ | ❌ | ✅（2回目で成功） |
+| 11 | Container Escape | △（要追加権限） | ❌ | ✅（ノイズ対策後） |
+| 12 | Container Escape | ✅ | ❌ | ✅（一発成功） |
+| 13 | Lateral Movement | ✅ | ❌ | ❌（未実装） |
+| 14 | Lateral Movement | ✅ | ❌ | ✅（ルール再設計後） |
+| 15 | Lateral Movement | ✅ | - | ✅ Audit Logsのみ |
+| 16 | Credential Access | ✅（接続試行まで） | ❌ | ✅ |
+| 17a（S3） | Exfiltration | ❌（認証情報なし） | ❌ | △（副次的） |
+| 17b（DNS） | Exfiltration | ✅ | ❌ | ❌（原理的に不可能） |
 
-**標準ルールだけでは20シナリオ中8本（40%）しか検知できず**、カスタムルール（悪性IPリスト照合、memfd_create検知、メタデータAPI接続検知など）を追加することで**14本（70%）まで引き上げられました**。残り6本のうち5本は「Falco単体では検知できないが他のデータソースで検知できる」パターン（Audit Logsやクラウド側が主役）、1本（Lab 3: kubelet誤公開API）は**どのデータソースでも観測できない真の空白**でした。
+### 集計
+
+攻撃が成立した15シナリオのうち：
+
+- **標準ルールのみで検知できたのは5本**（Lab 4, 5, 7, 8, 9 ＝ 33%）
+- **カスタムルールを追加して検知できたのは7本**（Lab 1, 2, 6, 10, 11, 12, 14, 16）
+- **原理的に検知不可能、またはFalcoの設計外と判明したのは2本**（Lab 13のスキャン検知、Lab 17bのDNS exfiltration）
+- **攻撃自体が現在のデフォルト設定では成立しなかったのは1本**（Lab 3）
+
+本文執筆時の想定（標準ルール40%、カスタムルール込み70%）という数値は架空のものであり、実機検証の結果に基づいて全面的に置き換えました。
 
 ## 未検知の原因分析
 
-未検知・低精度だったケースを、原因別に分類します。
+未検知・低精度だったケースを、原因別に分類し直します。本文執筆時の想定より、**原因の種類がずっと多様で深刻**でした。
 
 | 原因 | 該当Lab | 対策の方向性 |
 |---|---|---|
-| そもそも観測範囲外（ノード内でもAPIサーバ経由でもない独立領域） | Lab 3 | 検知ではなく予防（認証設定・ネットワーク遮断） |
-| 標準ルールが前提とする脅威インテリジェンスが古い/ない | Lab 2 | 脅威インテリジェンスフィードとの連携 |
-| 単発では異常に見えない（閾値・パターンの問題） | Lab 13, 17後半 | 統計的な異常検知（頻度・分布ベース） |
-| クラウドAPI層はそもそもFalcoの観測範囲外 | Lab 16後半, 17前半 | クラウドAudit Trailとの統合が必須 |
+| ルールの条件設計そのものの誤り（`proc.tty`依存、`outbound`マクロの前提） | Lab 1, 2 | マクロの実装を確認した上でカスタムルールを書く |
+| ルールの再現性の無さ（`proc.pname`解決のタイミング依存） | Lab 1→14 | 環境依存の情報に頼らない、最もシンプルな条件に倒す |
+| Falcoのアーキテクチャ上そもそも不可能（パケット内容・頻度分析） | Lab 13, 17b | ネットワーク観測・DNSサーバログ等、別データソースが必須 |
+| 攻撃自体が現代の環境では成立しない | Lab 3 | 検知ではなく、デフォルト設定の進化そのものが対策になっている |
+| 検証環境の制約（実クラウド・高機能CNIが無い） | Lab 16, 17a | 発展的な検証課題として切り出す |
+| カスタムルール自身が自己ノイズを誤検知 | Lab 11 | Falco自身の動作を除外する条件を加える |
 
-**この分類が示すのは、「ルールを足せば足すほど検知率が上がる」という単純な話ではない**ということです。Lab 3のような「予防でしか塞げない穴」に検知ルールを頑張って書こうとするのは筋が悪く、Lab 16後半のような「別のデータソースが主役になるべき領域」にFalcoのカスタムルールを追加しようとするのも非効率です。**検知のカバレッジを上げる努力は、どのデータソースの責任範囲かを見極めた上で投下する必要があります。**
+**この分類が示すのは、「ルールを足せば足すほど検知率が上がる」という単純な話ではない**ということです。原因によって対策の筋が全く異なり、**どの原因に当てはまるかを見極めずにルールを書き足すと、Lab 1・11のように何度も失敗を繰り返すことになります**。
 
 次章では、ここまで「検知できるか／できないか」という二択で見てきた視点を離れ、**検知の精度と、監視の負荷・遅延・リソース消費のトレードオフ**（研究C）を扱います。
 
@@ -97,3 +123,4 @@ Lab 1〜20の結果を、**標準ルールのみ**の場合と、**本書で追�
 - [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)
 - [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
 - [AWS CloudTrail User Guide](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html)
+- [k8s-attack-runtime-security-lab（本書の実験コード一式、全Labの実測ログを含む）](https://github.com/keitahigaki-prog/k8s-attack-runtime-security-lab)

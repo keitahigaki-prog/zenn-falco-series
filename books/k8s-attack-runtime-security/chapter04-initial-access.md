@@ -7,130 +7,203 @@ title: "第4章：Initial Access - コンテナへの侵入"
 ## この章で学ぶこと
 
 - 攻撃者がKubernetesクラスタへの最初の足がかりを得る4つの代表的な経路
-- Lab 1〜4の実験手順とFalco／Audit Logsでの観測結果
+- Lab 1〜4の実験手順とFalco／Audit Logsでの観測結果（kindクラスタでの実機検証）
 - 初期侵入の段階でどこまで検知できて、どこが観測の空白になるか
 
-本章から、第3章で構築したラボを使って実際に攻撃チェーンを再現していきます。扱うのはMITRE ATT&CK for Containersの**Initial Access**戦術に対応する4つの手法です。
+本章から、第3章で構築したラボを使って実際に攻撃チェーンを再現していきます。扱うのはMITRE ATT&CK for Containersの**Initial Access**戦術に対応する4つの手法です。すべて[k8s-attack-runtime-security-lab](https://github.com/keitahigaki-prog/k8s-attack-runtime-security-lab)のkindクラスタ上で実機検証しています。
 
 ---
 
 ## Lab 1: 公開Webアプリ脆弱性経由の侵入
 
 - **MITRE ATT&CK for Containers**: T1190 (Exploit Public-Facing Application)
-- **前提**: `vulnerable-webapp`（コマンドインジェクション可能なWebアプリ）を`vulnerable-webapp`というlabelの付いたPodにデプロイ
+- **前提**: `vulnerable-webapp`（`/ping?host=`パラメータをシェルに直接渡す自作のコマンドインジェクション脆弱性）を`lab` namespaceにデプロイ
 
 ```bash
 curl "http://vulnerable-webapp.lab.svc/ping?host=127.0.0.1;id"
 ```
 
-このWebアプリは、ユーザー入力をそのままシェルに渡してしまう典型的な脆弱性を持っています。これにより、攻撃者はアプリケーションコンテナ内で任意コマンドを実行できます。
-
-**Falcoの検知結果**:
+**結果**: 攻撃は成立し、`id`コマンドが実行されてコンテナ内でroot権限を確認できた。
 
 ```
-17:42:03.112345000: Warning Unexpected shell in web container (user=www-data container=vulnerable-webapp command=sh -c id)
+uid=0(root) gid=0(root) groups=0(root),1(bin),...
 ```
 
-標準ルール `Terminal Shell in Container` が反応します。Webサーバコンテナで`sh`/`bash`が起動すること自体が異常、という前提のルールが効いている形です。
+### 実機検証で判明した重大な誤り：標準ルールは検知できない
 
-**Audit Logsの記録**: 対象外（Pod内で完結する操作のため、APIサーバへのリクエストは発生しない）
+当初「標準ルール`Terminal Shell in Container`が反応する」という想定で執筆していたが、**実機では一切検知されなかった**。Falcoの実ルール定義を確認すると：
 
-**考察**: この手法はアプリケーション層の脆弱性に起因しますが、**検知はコンテナ内の挙動（シェル起動）で行っている**点がポイントです。脆弱性そのものをFalcoが検知しているわけではなく、「脆弱性が悪用された結果として起きる異常な振る舞い」を捉えています。
+```yaml
+- rule: Terminal shell in container
+  condition: >
+    spawned_process and container and shell_procs
+    and proc.tty != 0 and container_entrypoint
+    and not user_expected_terminal_shell_in_container_conditions
+```
+
+`proc.tty != 0`——つまり**ターミナルが接続されていること**が条件に含まれている。これは`kubectl exec -it`のような対話的侵入を想定したルールで、**Webアプリの脆弱性経由でプログラム的にシェルが起動するケース（TTYなし）はそもそも検知対象外**だった。
+
+### カスタムルールでの検知（1回目は失敗、2回目で成功）
+
+最初に書いたカスタムルールは、親プロセス名を直接指定するものだった：
+
+```yaml
+condition: spawned_process and container and shell_procs
+  and proc.pname in (python3, node, nginx, ...) and proc.tty=0
+```
+
+これも**発火しなかった**。原因は、Falcoのプロセスキャッシュのタイミングにより`proc.pname`がこのケースでは`<NA>`（未解決）になっていたため。`container_entrypoint`マクロ（`not proc.pname exists`を「エントリポイント相当」として扱う）を使った版に直したところ検知できたが、**この版も別のコンテナでは再び発火しないことが後の章（Lab 14）で判明**し、最終的には次の最もシンプルな条件に落ち着いた：
+
+```yaml
+- rule: Shell Spawned Without TTY
+  condition: >
+    spawned_process and container and shell_procs and proc.tty=0
+```
+
+実機での検知ログ：
+
+```
+Critical Shell spawned without a tty (user=root container=app process=sh
+  command=sh -c ping -c 1 127.0.0.1;id pod=vulnerable-webapp-... ns=lab)
+```
+
+**考察**: 「標準ルールでシェル起動を検知できる」という想定は誤りだった。カスタムルールも、親プロセス名のような「解決されるかどうか環境依存の情報」に頼ると再現性を失う。**TTYの有無という、最もシンプルで頑健な条件に行き着くまでに2回の失敗が必要**だったこと自体が、本書の重要な教訓になっている。
+
+### 副次的発見：kindラボでは他クラスタのsyscallも混入する
+
+同じイベントが、攻撃対象のPodが乗っていない他ノードのFalcoにも（メタデータ未解決の状態で）記録されていた。これは第3章で触れた、kindクラスタがDocker Desktopの単一カーネルを共有するための現象（詳細は第3章を参照）。
 
 ## Lab 2: 誤設定・悪意あるイメージの実行
 
-- **MITRE ATT&CK for Containers**: T1204.003 (Malicious Image), T1613 (Container and Resource Discovery の前段)
-- **前提**: 公開レジストリから取得した、意図的にbackdoorを仕込んだイメージをデプロイ
+- **MITRE ATT&CK for Containers**: T1204.003 (Malicious Image), T1071 (Application Layer Protocol)
+- **前提**: 外部マルウェア配布元には接続せず、**クラスタ内に自前で立てたC2サーバ**（固定ClusterIP `10.96.99.99:4444`）に対して、起動時にビーコン接続する模擬バックドア`backdoor-demo`をデプロイ
 
 ```bash
-kubectl run backdoor-test --image=ghcr.io/example-lab/backdoor-demo:latest
+kubectl apply -f lab/manifests/02-c2-and-backdoor.yaml
 ```
 
-このイメージは起動時に外部IPへのコネクションを確立するように仕込まれています。
+**結果**: ビーコン接続は成立（C2サーバから`c2-ack`応答を確認）。
 
-**Falcoの検知結果**:
+### 実機検証で判明した誤り：標準ルール・素朴なカスタムルールのどちらも失敗
 
+標準ルールでは、ビーコン送信側（クライアント）の接続自体は検知されなかった（発火したのは応答側`c2-server`の`nc -e`使用に対する`Netcat Remote Code Execution in Container`のみで、別物）。
+
+最初に書いたカスタムルールは、標準の`outbound`マクロを再利用するものだった：
+
+```yaml
+condition: outbound and fd.sip in (known_malicious_ips)
 ```
-17:45:11.903211000: Notice Outbound Connection to C2 Server (command=backdoor-agent connection=10.0.3.12:443->203.0.113.7:4444)
+
+**これも発火しなかった**。原因は`outbound`マクロの定義にあった：
+
+```yaml
+- macro: outbound
+  condition: >
+    ((evt.type = connect or ...) and (fd.typechar = 4 or fd.typechar = 6) and ...)
 ```
 
-標準ルールセットには「既知の悪性IPへの通信」に反応するルールはデフォルトで含まれないため、**本書の実験用にカスタムルール（接続先IPリストとのマッチング）を追加**しています。
+このマクロは、**RFC1918プライベートアドレス空間（`10.0.0.0/8`等）を「内部通信だから信頼できる」として暗黙に除外**していた。Kubernetesのservice CIDR（`10.96.0.0/12`）はこの範囲に含まれるため、**C2サーバをクラスタ内のプライベートIPに置いた時点で、標準マクロに依存するルールは原理的に検知不能**になる。
+
+### 修正版カスタムルール（実機確認済み）
+
+`outbound`マクロを使わず、`evt.type=connect`を直接評価する形に変更：
 
 ```yaml
 - list: known_malicious_ips
-  items: [203.0.113.7]
+  items: [10.96.99.99]
 
 - rule: Outbound Connection to C2 Server
-  desc: 既知の悪性IPへの通信
   condition: >
-    outbound and fd.sip in (known_malicious_ips)
-  output: >
-    Outbound Connection to C2 Server (command=%proc.name connection=%fd.name)
+    evt.type=connect and evt.dir=< and (fd.typechar=4 or fd.typechar=6)
+    and fd.sip in (known_malicious_ips)
   priority: CRITICAL
 ```
 
-**考察**: 標準ルールだけでは検知できず、**脅威インテリジェンス（悪性IPリスト）と組み合わせて初めて検知可能**になった例です。これは第10章の研究A（検知カバレッジ）で「未検知の理由」として分類する典型パターンのひとつです。
+```
+Critical Outbound connection to C2 server (command=nc
+  connection=10.244.2.9:35551->10.96.99.99:4444 container=backdoor-agent
+  pod=backdoor-demo ns=lab)
+```
+
+**考察**: 「カスタムルールを書けば解決する」という単純な話ではなく、**カスタムルールが依存する標準マクロ自体に、プライベートIP＝内部＝信頼できるという暗黙の前提が埋め込まれている**ことが分かった。クラスタ内に設置されたC2中継や横展開の着地点は、この前提が通用しない典型例。
 
 ## Lab 3: Kubelet誤公開APIの悪用
 
-- **MITRE ATT&CK for Containers**: T1552.007 (Container API), T1610 (Deploy Container)
-- **前提**: kubeletの読み取り専用ポート（10255）が誤って外部に公開された状態を再現
+- **MITRE ATT&CK for Containers**: T1552.007 (Container API)
+- **前提**: kubeletの読み取り専用ポート（10255）が誤って外部に公開された状態を想定
 
 ```bash
-curl http://<node-ip>:10255/pods
-curl -X POST http://<node-ip>:10250/run/<namespace>/<pod>/<container> -d "cmd=id"
+docker exec attack-lab-worker curl -s -m 3 http://localhost:10255/pods
+docker exec attack-lab-worker curl -sk -m 3 https://localhost:10250/pods
 ```
 
-kubelet APIが認証なしで公開されていると、クラスタ内のPod一覧取得や、任意コンテナへのコマンド実行が外部から可能になります。
+### 実機検証で判明した重大な事実：この攻撃は現在のKubernetesでは成立しない
 
-**Falcoの検知結果**: **対象外（観測の空白）**
+```
+--- 10255 ---
+RC=7   # Connection refused — ポート自体がlistenしていない
 
-kubelet APIへのリクエストは、ノード上のkubeletプロセスが処理するものであり、通常のPodのsyscallとしては現れません。Falcoはこの種の「kubeletそのものへの攻撃」を直接検知する設計にはなっていません。
+--- 10250 (anonymous) ---
+Unauthorized
+```
 
-**Audit Logsの記録**: 対象外（kubelet APIはkube-apiserverを経由しないため、Audit Logsにも記録されません）
+kubeletの設定を確認すると：
 
-**考察**: これは第1章で触れた境界線の空白が実際に現れる例です。**kubelet APIは「ノード内」でも「APIサーバ経由」でもない、独立した攻撃対象領域**であり、本書のラボ構成（Falco + Audit Logs）だけでは検知できません。対策としては、kubelet自体の認証設定（`--anonymous-auth=false`）や、ネットワークポリシーでの10250/10255ポートの外部遮断が必要になります。検知ではなく予防で塞ぐべき穴、という結論です。
+```yaml
+authentication:
+  anonymous:
+    enabled: false
+authorization:
+  mode: Webhook
+```
+
+**読み取り専用ポート10255は、そもそもlistenしていなかった**。セキュアポート（10250）は生きているが、`anonymous.enabled: false`と`Webhook`認可により、匿名リクエストは`Unauthorized`で拒否される。`system:anonymous`への過剰な権限付与も存在しないことを確認した。
+
+本Labの元ネタであるTesla社の事例（2018年）やKinsingキャンペーン（2020年〜）は、**当時のkubeletのデフォルト設定（`--anonymous-auth=true`がデフォルトだった時代）を前提にしたもの**であり、**現在のkubeadm/kind/マネージドKubernetesのデフォルトでは、この経路はすでに塞がれている**。
+
+**Falcoの検知結果／Audit Logsの記録**: 対象外（そもそも攻撃が成立しないため検知の問題ではない）
+
+**考察**: 本Labの価値は「検知できるか」ではなく、**「セキュリティは時間とともに変化する」ことを示す実証データ**にある。2018年当時は深刻な脅威だったものが、現在のデフォルト設定では成立しない。Lab 3を実際に成立させるには、意図的に`--anonymous-auth=true`を復元する必要があり、それ自体が「この設定変更がなぜ危険か」を示す教材になる。
 
 ## Lab 4: kubeconfig／Secret漏洩経由の侵入
 
 - **MITRE ATT&CK for Containers**: T1552.001 (Credentials In Files)
-- **前提**: CI/CDパイプラインのログに誤ってkubeconfigが出力されていた、という想定で、漏洩したkubeconfigを使い外部から直接クラスタAPIにアクセス
+- **前提**: CI/CDが使う`deploy-bot`というServiceAccountに、クラスタ全体のSecret読み取り権限（過剰権限）を付与し、そのトークンが漏洩した想定
 
 ```bash
-export KUBECONFIG=./leaked-kubeconfig
-kubectl get secrets -A
+TOKEN=$(kubectl create token deploy-bot -n lab --duration=1h)
+APISERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+curl -sk -H "Authorization: Bearer $TOKEN" "$APISERVER/api/v1/secrets"
 ```
 
-**Falcoの検知結果**: 対象外（この操作はクラスタ外から`kubectl`経由でAPIサーバに直接行われるため、ノード上のsyscallには現れない）
+**結果**: 攻撃は成立。全Namespace横断でSecret一覧を取得できた。
 
-**Audit Logsの記録**:
+**Falcoの検知結果**: 対象外（クラスタ外から直接APIサーバにアクセスするため、ノード上のsyscallには現れない）
+
+**Audit Logsの記録（実測）**:
 
 ```json
-{
-  "verb": "list",
-  "objectRef": {"resource": "secrets", "namespace": ""},
-  "user": {"username": "system:serviceaccount:ci:deploy-bot"},
-  "sourceIPs": ["198.51.100.23"],
-  "responseStatus": {"code": 200}
-}
+{"verb": "list", "user": {"username": "system:serviceaccount:lab:deploy-bot", ...,
+  "extra": {"authentication.kubernetes.io/credential-id": ["JTI=d30fbc1f-..."]}},
+ "objectRef": {"resource": "secrets", "apiVersion": "v1"}, "responseStatus": {"code": 200}}
 ```
 
-第3章で`secrets`リソースを`RequestResponse`レベルで記録する設定にしていたため、**漏洩した認証情報による不審な全Secret一覧取得**がAudit Logsにしっかり記録されています。ただし、これを「異常」と判定するにはAudit Logs単体では不十分で、**通常業務でのアクセスパターン（どのIPから、どの頻度で）とのベースライン比較が必要**です。
+本文の想定どおり、**Audit Logsに漏洩トークンによる全Secret一覧取得が正確に記録されていた**。これはLab 1〜3と異なり、実機結果が当初の想定と一致した数少ないケース。
 
-**考察**: ここはFalcoではなくAudit Logsが主役になる、明確な役割分担の例です。
+**考察**: ここはFalcoではなくAudit Logsが主役になる、明確な役割分担の例。短命トークン（`kubectl create token`で発行）であっても、JTIクレームとして追跡可能であることも確認できた。
 
 ---
 
 ## 本章のまとめ
 
-| Lab | 手法 | Falco | Audit Logs | 観測できた層 |
+| Lab | 手法 | 標準ルールで検知 | カスタムルールで検知 | 観測できた層 |
 |---|---|---|---|---|
-| 1 | 公開Webアプリ脆弱性 | ✅ 検知 | - | ノード内 |
-| 2 | 悪意あるイメージ | ⚠️ カスタムルールで検知 | - | ノード内 |
-| 3 | kubelet誤公開API | ❌ 観測の空白 | ❌ 観測の空白 | **どちらにも属さない独立領域** |
-| 4 | kubeconfig漏洩 | - | ✅ 検知（ただし異常判定には追加の文脈が必要） | APIサーバ |
+| 1 | 公開Webアプリ脆弱性 | ❌ | ✅（2回の失敗を経て） | ノード内 |
+| 2 | 悪意あるイメージ（C2ビーコン） | ❌ | ✅（1回目の素朴な実装は失敗） | ノード内 |
+| 3 | kubelet誤公開API | N/A（攻撃自体が不成立） | N/A | 現在のデフォルトでは観測不要 |
+| 4 | kubeconfig漏洩 | - | - | APIサーバ（Audit Logsのみで十分） |
 
-4本の実験だけでも、**「ノード内で完結する攻撃」「APIサーバ経由の攻撃」「どちらでもない空白地帯」**という3パターンが早速現れました。次章では、侵入後にコンテナ内部で何が実行されるか（Execution）を見ていきます。
+4本の実験を通して、**「標準ルールが思ったように動かない」「カスタムルールも標準マクロの前提に足を引っ張られる」「そもそも攻撃が成立しない」という、本文執筆時には想定していなかった3パターンの"つまずき"**が早速現れました。次章では、侵入後にコンテナ内部で何が実行されるか（Execution）を見ていきます。
 
 ## 参考資料
 
@@ -138,3 +211,4 @@ kubectl get secrets -A
 - [Kubelet authentication/authorization（公式ドキュメント）](https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/)
 - [Falco Default Rules（falcosecurity/rules）](https://github.com/falcosecurity/rules)
 - [Kubernetes Audit Logging（公式ドキュメント）](https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/)
+- [k8s-attack-runtime-security-lab（本書の実験コード一式）](https://github.com/keitahigaki-prog/k8s-attack-runtime-security-lab)
