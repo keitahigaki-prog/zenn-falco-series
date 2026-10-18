@@ -1,8 +1,8 @@
 ---
-title: "第3章：Initial Access - コンテナへの侵入"
+title: "第4章：Initial Access - コンテナへの侵入"
 ---
 
-# 第3章：Initial Access - コンテナへの侵入
+# 第4章：Initial Access - コンテナへの侵入
 
 ## この章で学ぶこと
 
@@ -10,7 +10,7 @@ title: "第3章：Initial Access - コンテナへの侵入"
 - Lab 1〜4の実験手順とFalco／Audit Logsでの観測結果
 - 初期侵入の段階でどこまで検知できて、どこが観測の空白になるか
 
-本章から、第2章で構築したラボを使って実際に攻撃チェーンを再現していきます。扱うのはMITRE ATT&CK for Containersの**Initial Access**戦術に対応する4つの手法です。
+本章から、第3章で構築したラボを使って実際に攻撃チェーンを再現していきます。扱うのはMITRE ATT&CK for Containersの**Initial Access**戦術に対応する4つの手法です。
 
 ---
 
@@ -69,7 +69,7 @@ kubectl run backdoor-test --image=ghcr.io/example-lab/backdoor-demo:latest
   priority: CRITICAL
 ```
 
-**考察**: 標準ルールだけでは検知できず、**脅威インテリジェンス（悪性IPリスト）と組み合わせて初めて検知可能**になった例です。これは第9章の研究A（検知カバレッジ）で「未検知の理由」として分類する典型パターンのひとつです。
+**考察**: 標準ルールだけでは検知できず、**脅威インテリジェンス（悪性IPリスト）と組み合わせて初めて検知可能**になった例です。これは第10章の研究A（検知カバレッジ）で「未検知の理由」として分類する典型パターンのひとつです。
 
 ## Lab 3: Kubelet誤公開APIの悪用
 
@@ -115,7 +115,7 @@ kubectl get secrets -A
 }
 ```
 
-第2章で`secrets`リソースを`RequestResponse`レベルで記録する設定にしていたため、**漏洩した認証情報による不審な全Secret一覧取得**がAudit Logsにしっかり記録されています。ただし、これを「異常」と判定するにはAudit Logs単体では不十分で、**通常業務でのアクセスパターン（どのIPから、どの頻度で）とのベースライン比較が必要**です。
+第3章で`secrets`リソースを`RequestResponse`レベルで記録する設定にしていたため、**漏洩した認証情報による不審な全Secret一覧取得**がAudit Logsにしっかり記録されています。ただし、これを「異常」と判定するにはAudit Logs単体では不十分で、**通常業務でのアクセスパターン（どのIPから、どの頻度で）とのベースライン比較が必要**です。
 
 **考察**: ここはFalcoではなくAudit Logsが主役になる、明確な役割分担の例です。
 

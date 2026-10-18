@@ -1,8 +1,8 @@
 ---
-title: "第8章：Credential AccessとExfiltration"
+title: "第9章：Credential AccessとExfiltration"
 ---
 
-# 第8章：Credential AccessとExfiltration
+# 第9章：Credential AccessとExfiltration
 
 ## この章で学ぶこと
 
@@ -99,4 +99,4 @@ DNS exfiltrationは、**単発のクエリでは異常に見えません**が、
 | 17 | S3持ち出し | ✅ コマンド実行で検知 | ✅ PutObjectを記録 | 2つのデータソースで裏付けが取れる |
 | 17 | DNS exfiltration | ✅ クエリパターンで検知 | ❌ 記録されない | Falcoのみが頼りになる経路もある |
 
-第3章から本章まで、8フェーズ・17本の実験を通して、**Falco・Kubernetes Audit Logs・クラウドAudit Trail・ネットワーク観測**という4つの観測手段それぞれの得意分野と空白地帯が見えてきました。残り3本の実験（Lab 18〜20）と、これまでの結果の横断分析は次章で行います。
+第4章から本章まで、8フェーズ・17本の実験を通して、**Falco・Kubernetes Audit Logs・クラウドAudit Trail・ネットワーク観測**という4つの観測手段それぞれの得意分野と空白地帯が見えてきました。残り3本の実験（Lab 18〜20）と、これまでの結果の横断分析は次章で行います。

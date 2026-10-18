@@ -1,8 +1,8 @@
 ---
-title: "第5章：Privilege Escalation - 権限昇格"
+title: "第6章：Privilege Escalation - 権限昇格"
 ---
 
-# 第5章：Privilege Escalation - 権限昇格
+# 第6章：Privilege Escalation - 権限昇格
 
 ## この章で学ぶこと
 
@@ -10,14 +10,14 @@ title: "第5章：Privilege Escalation - 権限昇格"
 - Lab 7〜9の実験手順とFalco・RBAC監査それぞれの観測結果
 - 「コンテナの中での昇格」と「クラスタAPIでの昇格」の違い
 
-本章ではMITRE ATT&CK for Containersの**Privilege Escalation**戦術を扱います。第2章で用意した`misconfigured-pod`（特権コンテナ）と`over-privileged-sa`（過剰権限のServiceAccount）を使います。
+本章ではMITRE ATT&CK for Containersの**Privilege Escalation**戦術を扱います。第3章で用意した`misconfigured-pod`（特権コンテナ）と`over-privileged-sa`（過剰権限のServiceAccount）を使います。
 
 ---
 
 ## Lab 7: 特権コンテナ・hostPath悪用
 
 - **MITRE ATT&CK for Containers**: T1611 (Escape to Host の前段階), T1612 (Build Image on Host)
-- **前提**: 第2章で作成した`misconfigured-pod`（`privileged: true` + `hostPath: /`をマウント）
+- **前提**: 第3章で作成した`misconfigured-pod`（`privileged: true` + `hostPath: /`をマウント）
 
 ```bash
 kubectl exec -it misconfigured-pod -- sh
@@ -99,7 +99,7 @@ ptrace_test --pid=<host-process-pid>
 18:31:55.772098000: Warning Container with Sensitive Capability Added (container=cap-abuse-pod capability=CAP_SYS_PTRACE)
 ```
 
-**考察**: Capabilitiesの悪用自体よりも、**「そもそもそのCapabilityが付与された時点」で検知する**アプローチが効果的でした。これは第9章で扱う「実行後の検知」と「構成時点での検知（Admission/Posture側）」の役割分担にもつながる論点です。
+**考察**: Capabilitiesの悪用自体よりも、**「そもそもそのCapabilityが付与された時点」で検知する**アプローチが効果的でした。これは第10章で扱う「実行後の検知」と「構成時点での検知（Admission/Posture側）」の役割分担にもつながる論点です。
 
 ---
 

@@ -1,8 +1,8 @@
 ---
-title: "第7章：Lateral Movement - クラスタ内横展開"
+title: "第8章：Lateral Movement - クラスタ内横展開"
 ---
 
-# 第7章：Lateral Movement - クラスタ内横展開
+# 第8章：Lateral Movement - クラスタ内横展開
 
 ## この章で学ぶこと
 
@@ -10,7 +10,7 @@ title: "第7章：Lateral Movement - クラスタ内横展開"
 - Lab 13〜15の実験手順とFalco・ネットワーク観測それぞれの結果
 - 「ノード内の検知」だけでは追えない、複数ノードをまたぐ攻撃の見え方
 
-本章ではMITRE ATT&CK for Containersの**Lateral Movement**戦術を扱います。第2章で準備したネットワーク観測（CNIフローログ／tcpdump）が初めて主役になる章です。
+本章ではMITRE ATT&CK for Containersの**Lateral Movement**戦術を扱います。第3章で準備したネットワーク観測（CNIフローログ／tcpdump）が初めて主役になる章です。
 
 ---
 

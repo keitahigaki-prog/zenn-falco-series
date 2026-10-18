@@ -29,40 +29,41 @@ flowchart TD
 
     subgraph P1["Part 1 — 準備"]
         C1["第1章：攻撃者から見たKubernetes"]
-        C2["第2章：攻撃・観測ラボの構築"]
+        CM["第2章：MITRE ATT&CK for Containersの全体像"]
+        C2["第3章：攻撃・観測ラボの構築"]
     end
 
     subgraph P2["Part 2 — 攻撃チェーンの再現（MITRE ATT&CK for Containers）"]
-        C3["第3章：Initial Access"]
-        C4["第4章：Execution"]
-        C5["第5章：Privilege Escalation"]
-        C6["第6章：Container Escape"]
-        C7["第7章：Lateral Movement"]
-        C8["第8章：Credential Access / Exfiltration"]
+        C3["第4章：Initial Access"]
+        C4["第5章：Execution"]
+        C5["第6章：Privilege Escalation"]
+        C6["第7章：Container Escape"]
+        C7["第8章：Lateral Movement"]
+        C8["第9章：Credential Access / Exfiltration"]
     end
 
     subgraph P3["Part 3 — 観測と評価"]
-        C9["第9章：Falco・eBPFによる攻撃の追跡"]
-        C10["第10章：Runtime Detectionの限界と評価"]
+        C9["第10章：Falco・eBPFによる攻撃の追跡"]
+        C10["第11章：Runtime Detectionの限界と評価"]
     end
 
-    INTRO --> C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8 --> C9 --> C10
+    INTRO --> C1 --> CM --> C2 --> C3 --> C4 --> C5 --> C6 --> C7 --> C8 --> C9 --> C10
 ```
 
-Part 1で実験の前提（なぜ攻撃者視点が必要か、どういうラボで検証するか）を固め、Part 2で8つの攻撃フェーズを20本の実験として再現し、Part 3でそれらをFalco/eBPF/Audit Logsで追跡・評価します。各章には対応する実験（Lab）番号を付けており、再現手順とログはGitHubリポジトリで公開します。
+Part 1で実験の前提（なぜ攻撃者視点が必要か、攻撃チェーンをどう体系的に整理するか、どういうラボで検証するか）を固め、Part 2で8つの攻撃フェーズを20本の実験として再現し、Part 3でそれらをFalco/eBPF/Audit Logsで追跡・評価します。各章には対応する実験（Lab）番号を付けており、再現手順とログはGitHubリポジトリで公開します。
 
 ## 本書が答える3つの研究課題
 
 実験を通して、次の3つを検証します。
 
-- **研究A：検知カバレッジ** — 20種類の攻撃シナリオに対し、Falco標準ルールとカスタムルールがどこまで検知できるか。未検知だった場合、その理由は何か（第9章）
-- **研究B：単一データソースの限界** — syscallイベントだけで攻撃経路を追跡できるのか。Kubernetes Audit Logsやネットワーク情報と組み合わせないと見えないものは何か（第9章）
-- **研究C：性能とのトレードオフ** — 監視を強めるほど検知遅延・イベント欠落・リソース消費はどう変化するのか（第10章）
+- **研究A：検知カバレッジ** — 20種類の攻撃シナリオに対し、Falco標準ルールとカスタムルールがどこまで検知できるか。未検知だった場合、その理由は何か（第10章）
+- **研究B：単一データソースの限界** — syscallイベントだけで攻撃経路を追跡できるのか。Kubernetes Audit Logsやネットワーク情報と組み合わせないと見えないものは何か（第10章）
+- **研究C：性能とのトレードオフ** — 監視を強めるほど検知遅延・イベント欠落・リソース消費はどう変化するのか（第11章）
 
 ## 守備範囲の境界線を先に意識する
 
 もう一つ、本書を通じて繰り返し立ち返る論点があります。それは**「Falcoが見ている境界線」と「Kubernetes／クラウド基盤（GKEなど）が守っている境界線」は別物**だということです。
 
-Falcoはノード上のカーネルで動くため、**コンテナやホストの中で起きたこと**には強い可視性を持ちます。一方で、マネージドKubernetes（GKE / EKS / AKS）のコントロールプレーンや、クラウドAPI層での操作は、Falcoのsyscall監視の外側にあります。そこを埋めるのがKubernetes Audit LogsやクラウドのAudit Trail（CloudTrail等）であり、「どこからどこまでを何で見るか」という境界線の設計そのものが、Runtime Securityの実践では検知ルール以上に重要になります。この境界線は第1章・第2章で具体的に扱い、第9章の追跡実験で実際に検証します。
+Falcoはノード上のカーネルで動くため、**コンテナやホストの中で起きたこと**には強い可視性を持ちます。一方で、マネージドKubernetes（GKE / EKS / AKS）のコントロールプレーンや、クラウドAPI層での操作は、Falcoのsyscall監視の外側にあります。そこを埋めるのがKubernetes Audit LogsやクラウドのAudit Trail（CloudTrail等）であり、「どこからどこまでを何で見るか」という境界線の設計そのものが、Runtime Securityの実践では検知ルール以上に重要になります。この境界線は第1章・第3章で具体的に扱い、第10章の追跡実験で実際に検証します。
 
 次章から、攻撃者の視点でKubernetesを見直すところから始めます。
