@@ -112,3 +112,21 @@ MITRE ATT&CK for Containers以外にも、コンテナ・Kubernetesの脅威を�
 - 類似フレームワークは複数あるが、本書は**比較可能性**を重視してMITRE ATT&CK for Containersを採用している
 
 次章では、このフレームワークに沿って実験を行うための、攻撃・観測ラボを構築します。
+
+## 参考資料
+
+### MITRE ATT&CK公式
+
+- [MITRE ATT&CK](https://attack.mitre.org/) - 公式トップページ
+- [Containers Matrix](https://attack.mitre.org/matrices/enterprise/containers/) - 本章で扱った戦術・手法の一覧
+- [T1611: Escape to Host](https://attack.mitre.org/techniques/T1611/)
+- [T1552: Unsecured Credentials](https://attack.mitre.org/techniques/T1552/)
+- [T1552.005: Cloud Instance Metadata API](https://attack.mitre.org/techniques/T1552/005/)
+- [T1552.007: Container API](https://attack.mitre.org/techniques/T1552/007/)
+- [ATT&CK Navigator](https://mitre-attack.github.io/attack-navigator/) - 検知カバレッジのヒートマップ可視化ツール
+
+### 類似・関連フレームワーク
+
+- [Microsoft: Attack matrix for Kubernetes](https://www.microsoft.com/en-us/security/blog/2020/04/02/attack-matrix-kubernetes/) - Kubernetes Threat Matrix（2020年公開）
+- [NSA/CISA Kubernetes Hardening Guidance](https://media.defense.gov/2022/Aug/29/2003066362/-1/-1/0/CTR_KUBERNETES_HARDENING_GUIDANCE_1.2_20220829.PDF)（PDF）
+- [CNCF Cloud Native Security Whitepaper](https://github.com/cncf/tag-security/blob/main/security-whitepaper/v2/cloud-native-security-whitepaper.md)
