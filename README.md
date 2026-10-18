@@ -31,7 +31,7 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | 第3章 | [Initial Access：コンテナへの侵入](books/k8s-attack-runtime-security/chapter03-initial-access.md) | ✅ 執筆完了 |
 | 第4章 | [Execution：コンテナ内部での不正実行](books/k8s-attack-runtime-security/chapter04-execution.md) | ✅ 執筆完了 |
 | 第5章 | [Privilege Escalation：権限昇格](books/k8s-attack-runtime-security/chapter05-privilege-escalation.md) | ✅ 執筆完了 |
-| 第6章 | Container Escape：ホスト境界の突破 | 📝 未着手 |
+| 第6章 | [Container Escape：ホスト境界の突破](books/k8s-attack-runtime-security/chapter06-container-escape.md) | ✅ 執筆完了 |
 | 第7章 | Lateral Movement：クラスタ内横展開 | 📝 未着手 |
 | 第8章 | Credential AccessとExfiltration | 📝 未着手 |
 | 第9章 | Falco・eBPFによる攻撃の追跡 | 📝 未着手 |
