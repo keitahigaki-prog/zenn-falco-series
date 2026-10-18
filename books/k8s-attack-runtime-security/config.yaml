@@ -10,7 +10,7 @@ chapters:
   - chapter02-lab-setup
   - chapter03-initial-access
   - chapter04-execution
-  # - chapter05-privilege-escalation
+  - chapter05-privilege-escalation
   # - chapter06-container-escape
   # - chapter07-lateral-movement
   # - chapter08-credential-access-exfiltration
