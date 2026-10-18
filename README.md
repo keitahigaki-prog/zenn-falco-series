@@ -35,7 +35,9 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | 第7章 | [Lateral Movement：クラスタ内横展開](books/k8s-attack-runtime-security/chapter07-lateral-movement.md) | ✅ 執筆完了 |
 | 第8章 | [Credential AccessとExfiltration](books/k8s-attack-runtime-security/chapter08-credential-access-exfiltration.md) | ✅ 執筆完了 |
 | 第9章 | [Falco・eBPFによる攻撃の追跡](books/k8s-attack-runtime-security/chapter09-tracking-with-falco-ebpf.md) | ✅ 執筆完了 |
-| 第10章 | Runtime Detectionの限界と評価 | 📝 未着手 |
+| 第10章 | [Runtime Detectionの限界と評価](books/k8s-attack-runtime-security/chapter10-detection-limits-and-evaluation.md) | ✅ 執筆完了 |
+
+**🎉 全10章（+はじめに）の執筆が完了しました！**
 
 ## 開発環境
 
