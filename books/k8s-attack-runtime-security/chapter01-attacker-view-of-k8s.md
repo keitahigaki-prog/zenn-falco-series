@@ -53,46 +53,7 @@ Kubernetes自体の侵害ではありませんが、設定ミスのあるWAF（W
 
 Kubernetesクラスタへの攻撃経路は、ひとつではありません。レイヤーごとに整理すると見通しが良くなります。
 
-```mermaid
-flowchart LR
-    subgraph External["外部からの入口"]
-        App["公開Webアプリ / API"]
-        Reg["コンテナレジストリ・イメージ"]
-    end
-
-    subgraph DataPlane["データプレーン（ノード／Pod）"]
-        Pod["コンテナ / Pod"]
-        CRI["コンテナランタイム（CRI）"]
-        Node["ノード（ホストOS）"]
-        Kubelet["kubelet API<br/>（ノード上で動くが独立した経路）"]
-    end
-
-    subgraph ControlPlane["コントロールプレーン"]
-        API["kube-apiserver"]
-        ETCD["etcd"]
-    end
-
-    subgraph CloudLayer["クラウド基盤（GKE/EKS/AKS等）"]
-        MetaAPI["インスタンスメタデータAPI"]
-        IAM["IAM / サービスアカウント"]
-        VPC["VPC / ネットワーク境界"]
-    end
-
-    App -->|脆弱性/誤設定経由| Pod
-    Reg -->|悪意あるイメージ| Pod
-    Pod -->|CRIの脆弱性等でエスケープ| CRI
-    CRI --> Node
-    Node -.->|誤公開時のみ到達可能| Kubelet
-    Kubelet -.->|任意コンテナでコマンド実行| Pod
-    Pod -->|RBAC悪用| API
-    API --> ETCD
-    Pod -->|メタデータ窃取| MetaAPI
-    MetaAPI -->|トークン悪用| IAM
-    Pod -.->|横展開| VPC
-
-    classDef sidePath stroke-dasharray: 4 3
-    class Kubelet sidePath
-```
+![図1-1：Kubernetesの攻撃対象領域（Attack Surface）](/images/ch01-attack-surface.svg)
 
 それぞれのレイヤーで、攻撃者が何を狙っているのかを具体的に見ておきます。
 
