@@ -28,7 +28,7 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | はじめに | [なぜ『攻撃者視点』でRuntime Securityを学ぶのか](books/k8s-attack-runtime-security/introduction.md) | ✅ 執筆完了 |
 | 第1章 | [攻撃者から見たKubernetes](books/k8s-attack-runtime-security/chapter01-attacker-view-of-k8s.md) | ✅ 執筆完了 |
 | 第2章 | [攻撃・観測ラボの構築](books/k8s-attack-runtime-security/chapter02-lab-setup.md) | ✅ 執筆完了 |
-| 第3章 | Initial Access：コンテナへの侵入 | 📝 未着手 |
+| 第3章 | [Initial Access：コンテナへの侵入](books/k8s-attack-runtime-security/chapter03-initial-access.md) | ✅ 執筆完了 |
 | 第4章 | Execution：コンテナ内部での不正実行 | 📝 未着手 |
 | 第5章 | Privilege Escalation：権限昇格 | 📝 未着手 |
 | 第6章 | Container Escape：ホスト境界の突破 | 📝 未着手 |
