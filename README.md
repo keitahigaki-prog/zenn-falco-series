@@ -33,7 +33,7 @@ FalcoによるKubernetesランタイムセキュリティの基礎から実運�
 | 第5章 | [Privilege Escalation：権限昇格](books/k8s-attack-runtime-security/chapter05-privilege-escalation.md) | ✅ 執筆完了 |
 | 第6章 | [Container Escape：ホスト境界の突破](books/k8s-attack-runtime-security/chapter06-container-escape.md) | ✅ 執筆完了 |
 | 第7章 | [Lateral Movement：クラスタ内横展開](books/k8s-attack-runtime-security/chapter07-lateral-movement.md) | ✅ 執筆完了 |
-| 第8章 | Credential AccessとExfiltration | 📝 未着手 |
+| 第8章 | [Credential AccessとExfiltration](books/k8s-attack-runtime-security/chapter08-credential-access-exfiltration.md) | ✅ 執筆完了 |
 | 第9章 | Falco・eBPFによる攻撃の追跡 | 📝 未着手 |
 | 第10章 | Runtime Detectionの限界と評価 | 📝 未着手 |
 
