@@ -20,17 +20,20 @@ Falcoのデフォルト設定で本番環境に導入すると、膨大な数の
 
 ### アラート爆発の仕組み
 
-```
-syscall数 × Falcoの見張り対象の広さ = アラート数
+本書のために用意した検証環境（第2章で詳しく組み立てます）で、実際に体験してみます。何もチューニングしていないFalco（0.45.0、upstreamの`falco_rules.yaml`そのまま）に対して、**攻撃ではない、ごく普通の業務ワークロード7種類**——設定リローダー、起動時に依存パッケージを取得するWebアプリ、外形監視のping、コンプライアンス用の`/etc/shadow`読み取りジョブ、CI的なシークレット混入チェック、ログローテーション、SREの`kubectl exec`調査——を15分間動かしました。
 
-例：
-- Kubernetesクラスタ上の50 Pods
-- 各Podで毎秒500 syscalls発生
-- Falcoが30個のルールをチェック
-- そのうち5個が引っかかる条件を満たす
+結果は次の通りです。
 
-= 50 × 500 × 5 = 125,000件/分のアラート候補
-実際に条件を満たすものは数千〜数万件/分
 ```
+   4 Contact K8S API Server From Container
+   2 Terminal shell in container
+   2 Search Private Keys or Passwords
+   2 Read sensitive file untrusted
+   2 Packet socket created in container
+   2 Drop and execute new binary in container
+   1 Clear Log Activities
+```
+
+**15分で15件。攻撃者は一人も登場していません。** それぞれのルールは、upstreamが「検知すべき」と判断した妥当な条件を持っています。問題は、その条件に自分たちの正常な業務がたまたま一致してしまうことです。これが本番の50 Pod・数百のワークロードで起きれば、1時間で数百件のアラートになるのは当然の帰結です。
 
 この現象は避けられません。導入後のアラート爆発は、監視が機能している証です。むしろ、ノイズが多い状態から始まるのが正常な運用フローなのです。

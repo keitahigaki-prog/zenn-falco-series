@@ -7,20 +7,15 @@ toc_depth: 2
 chapters:
   - introduction
   - chapter01-why-hard
-  - chapter02-tuning-overview
+  - chapter02-lab-setup
   - chapter03-condition
-  - chapter04-fields
-  - chapter05-macro-list
+  - chapter04-fields-and-macros
+  - chapter05-triage-flow
   - chapter06-exceptions
-  - chapter07-triage-flow
-  - chapter08-upstream
-  - chapter09-kubernetes
-  - chapter10-case-studies
-  - chapter11-operation
-  - chapter12-faq
-  - appendix-a-field-reference
-  - appendix-b-condition-cheatsheet
-  - appendix-c-exception-patterns
-  - appendix-d-review-checklist
-  - appendix-e-production-checklist
-  - appendix-f-false-positive-catalog
+  - chapter07-upstream
+  - chapter08-case-studies
+  - chapter09-regression-testing
+  - chapter10-operation
+  - appendix-a-condition-cheatsheet
+  - appendix-b-exception-patterns
+  - appendix-c-checklists
