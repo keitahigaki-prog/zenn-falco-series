@@ -192,8 +192,8 @@ Falcoエコシステムの強さは、「個人の鋭いアイデアが、コミ
 
 ### (i) いま、確かに存在するもの（事実）
 
-- Falcoは2024-02-29にCNCF Graduated、最新は0.44.1（2026年6月）。modern eBPFが標準、legacy eBPFは0.44+で除去済み。
-- プラグインフレームワークによる対応イベント源の拡張、Falcosidekick（Stable）、Falco Talon（Incubating）、Stratoshark（2025、Wireshark Foundation寄贈）。
+- Falcoは2024-02-29にCNCF Graduated、最新は0.45.0（2026年9月）。modern eBPFが標準、legacy eBPFは0.44+で除去済み。
+- プラグインフレームワークによる対応イベント源の拡張、Falcosidekick（Stable）、Falco Talon（Incubating）、Stratoshark（2025、Wireshark Foundation寄贈）。デプロイ面でもFalco Operator 0.2.0（2026-03-23）がKubernetes上の推奨手段に。
 - **Prempti**（2026-05-12発表、falcosecurity org）：`coding_agent` 源、`allow/deny/ask`、Claude Codeスキル。
 - 防御を加速する側：Sysdig Sage、Sysdig MCP Server（sysdiglabs/sysdig-mcp-server、2025-10）。
 - 脅威地図：OWASP LLM Top 10（2025）、Agentic ASI（2025-12）。

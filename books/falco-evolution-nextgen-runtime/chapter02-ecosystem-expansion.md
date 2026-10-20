@@ -177,6 +177,7 @@ flowchart TB
     end
     subgraph OPS["運用・テスト・配布"]
         CHARTS["charts<br/>(公式 Helm チャート)"]
+        OPERATOR["operator<br/>(Kubernetes Operator<br/>推奨デプロイ手段)"]
         EVGEN["event-generator<br/>(検知テスト用に擬似的な不審活動を生成)"]
     end
     subgraph GOV["ガバナンス"]
@@ -192,10 +193,13 @@ flowchart TB
 | `plugin-sdk-go` | プラグインを開発するためのGo SDK。第1節のプラグイン拡張を支える |
 | `k8s-metacollector` | Kubernetesメタデータを一箇所に集約・配信。`k8smeta` プラグインと対で動作し、**APIサーバへの負荷を軽減** |
 | `charts` | 公式Helmチャート。Falco本体やFalcosidekickの導入を標準化 |
+| `operator` | Kubernetes Operator。CRDでFalcoのデプロイ・設定・ルール配布をKubernetesネイティブに管理する |
 | `event-generator` | ルールの動作検証のため、擬似的な悪性アクティビティを生成するツール。広く使われている（深い主張をする際は最新仕様を要確認） |
 | `evolution` | プロジェクトのガバナンス／寄贈提案を扱うリポジトリ。Sandbox / Incubating / Stable の成熟度レベルを定義 |
 
 特に `k8s-metacollector` は実運用上の知恵が詰まった存在です。多数のFalcoインスタンスがそれぞれKubernetes APIサーバに問い合わせると、APIサーバが過負荷になりかねません。そこでメタデータの収集を一箇所（metacollector）に集約し、各ノードのFalcoには `k8smeta` プラグイン経由で配信する — スケーラビリティへの配慮が設計に組み込まれているわけです。
+
+もう一つ、**デプロイ手段そのものの世代交代**も押さえておきたい動きです。長らく Helm チャート（`charts`）が事実上の標準デプロイ方法でしたが、**Falco Operator 0.2.0**（2026-03-23リリース）で、Operatorが**Kubernetes上でFalcoをデプロイ・管理する推奨手段**と明言されました。Falco本体だけでなく、Falcosidekick・Falcosidekick UI・k8s-metacollectorまで単一のComponentコントローラでまとめて管理でき、ルールやconfigはOCIアーティファクトに加えてConfigMapからも取り込めます（v0.1.1からの58コミット、10件のバグ修正を含む大型リリース。既存カスタムリソースのマイグレーションを伴う破壊的変更あり）。Helmチャートが消えるわけではありませんが、「どちらを使うか」の既定値が動きつつある、という事実は押さえておく価値があります（出典: https://falco.org/blog/falco-operator-0-2-0/）。
 
 また `evolution` リポジトリが定義する **Sandbox / Incubating / Stable** という成熟度レベルは、第2節で触れた「Falcosidekickは Stable のEcosystemプロジェクト」という位置づけの根拠でもあります。エコシステムが拡大するほど、「どのプロジェクトがどれだけ成熟しているか」を明示するガバナンスが重要になる — これもまた、点から面へ広がったFalcoが向き合う課題です。
 

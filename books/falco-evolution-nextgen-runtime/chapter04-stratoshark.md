@@ -12,6 +12,7 @@ title: "第4章：観測の系譜 — Stratoshark と Falco libs、Wireshark哲�
 - Stratoshark とは何か：Wireshark の成熟したUIでsyscall・クラウドログを開いて事後解析する仕組み
 - 技術的な核心：Falco libs を介してWiresharkとsyscallを接続し、Falco・Sysdig CLI・Stratoshark がキャプチャ形式を共有していること
 - Falco（リアルタイム・ルールベース検知）と Stratoshark（対話的フォレンジック）の役割分担と補完関係
+- 検知駆動の自動キャプチャとStratosharkの統合、その先に見える「KDR（Kubernetes Detection and Response）」という方向性
 - Part 1「Falcoの進化」の総括と、Part 2「AI時代の新しい攻撃面」への橋渡し
 
 ## 1. 観測の系譜 ― パケットから対話的捜査へ
@@ -167,6 +168,16 @@ flowchart LR
 
 Falco がアラートを鳴らすところから捜査が始まり、Stratoshark での深掘りで得た知見が新しいFalcoルールとして還元され、次の検知精度を高める――この**ループ全体が、Falco libs という共通土台の上で閉じている**点に注目してください。検知と捜査は対立するものでも、独立したものでもなく、文字どおり同じ車を前に進める両輪なのです。
 
+## 5. 「手動キャプチャ」から「検知駆動の自動キャプチャ」へ
+
+ここまでの説明は、Sysdig CLIなどで**人間が能動的に `.scap` を採取する**ワークフローを前提にしていました。しかしFalco本体にも、この手順を自動化する機能がすでに組み込まれています。
+
+Falcoは**0.42.0でcapture recording機能をsandbox成熟度として導入**し、0.43.0で安定化、0.44.0では生成される `.scap` ファイルに上限サイズを設ける `capture.max_file_size_mb` が追加されました。これは**ルールが発火した瞬間、Falco自身がその前後のsyscallトレースを `.scap` として自動的に記録する**機能です。記録対象はグローバルに有効化することも、`mode: rules` で特定のルールにだけ `capture: true`（必要なら `capture_duration` も）を付けて絞り込むこともできます（出典: https://github.com/falcosecurity/falco/issues/3595、https://github.com/falcosecurity/falco/pull/3645）。
+
+この自動キャプチャが向かう先が、まさに本章で見てきたStratosharkです。2025年11月10日、CNCFは「Falco Links Real-Time Detection with Forensic-Level Analysis in the Cloud Native Stack」として、Falcoが検知時に自動生成した `.scap` をそのままStratosharkで開き、Wireshark流にリプレイ・精査できる統合を発表しました。加えて、プラグインAPI側にも**フィールドのバイトオフセットをマッピングする仕組み**が入り、Kubernetes監査ログやAWS CloudTrailのような構造化ログの「どのバイト範囲がどのフィールドに対応するか」をStratoshark上で視覚的にハイライトできるようになっています（出典: https://www.cncf.io/announcements/2025/11/10/falco-links-real-time-detection-with-forensic-level-analysis-in-the-cloud-native-stack/）。
+
+言い換えれば、§3で「手動で実現可能」と説明したワークフロー図の③（該当時間帯のキャプチャ取得）は、もはや**人間が覚えておいて実行する手順ではなく、検知と同時にFalcoが自動で済ませておいてくれる前処理**になりつつあります。人間の仕事は「キャプチャを取る」ことから「Stratoshark上で、もう手元にあるキャプチャを読み解く」ことへとシフトする――これが、FalcoとStratosharkが揃って見据える**Kubernetes Detection and Response（KDR）**という方向性です。検知・隔離（Talon）・証跡保全（自動キャプチャ）・解析（Stratoshark）までを一つのライフサイクルとして閉じ、孤立した点のツールの寄せ集めから脱する――という構想であり、現時点では個々の機能はすでに実装済みである一方、「KDR」という統合コンセプト自体は発表されたばかりの方向性（まだ成熟しきってはいない）だと捉えておくのが正確です。
+
 ## まとめ
 
 本章では、Falcoの進化を支えてきた **Falco libs という共通土台**が、2025年に **Stratoshark** という新しい結実を生んだことを見てきました。
@@ -175,6 +186,7 @@ Falco がアラートを鳴らすところから捜査が始まり、Stratoshark
 - Stratoshark は Wireshark の成熟したUIで syscall・クラウドログを開く「syscallのWireshark」であり、2025年5月14日に Wireshark Foundation へ寄贈された
 - その技術的核心は、Wireshark と syscall を **Falco libs（libsinsp/libscap）で接続**したこと。Falco・Sysdig CLI・Stratoshark はキャプチャ形式を共有し、検知と捜査の知見が双方向に還流する
 - Falco（リアルタイム検知）と Stratoshark（対話的フォレンジック）は、同じ根を持つ車の両輪である
+- 検知駆動の自動キャプチャ（Falco 0.42〜0.44）とStratosharkの統合（2025-11-10発表）により、「キャプチャを取る」手順そのものが自動化されつつあり、その先に**KDR（Kubernetes Detection and Response）**という統合ライフサイクルの構想がある
 
 ここで Part 1「Falcoの進化」を締めくくります。第1章から本章まで、私たちが一貫して追ってきたのは「**Linuxプロセスが実際に何をしているか**を、低レイヤの真実から見る」という観測の進化でした。検知も応答も捜査も、その対象は突き詰めれば「syscallを発行するプロセス」だったのです。
 
@@ -183,6 +195,8 @@ Falco がアラートを鳴らすところから捜査が始まり、Stratoshark
 ### 参考リンク
 
 - Stratoshark 公式サイト: https://stratoshark.org
+- Falco capture recording機能のissue/PR: https://github.com/falcosecurity/falco/issues/3595 / https://github.com/falcosecurity/falco/pull/3645
+- CNCF発表「Falco Links Real-Time Detection with Forensic-Level Analysis in the Cloud Native Stack」（2025-11-10）: https://www.cncf.io/announcements/2025/11/10/falco-links-real-time-detection-with-forensic-level-analysis-in-the-cloud-native-stack/
 - Sysdig Blog「Stratoshark: Extending Wireshark's Legacy into the Cloud」: https://sysdig.com/blog/stratoshark-extending-wiresharks-legacy-into-the-cloud
 - Sysdig プレスリリース / Wireshark Foundation への寄贈に関する発表: https://sysdig.com/press-releases/
 - Falco libs（libsinsp / libscap）: https://github.com/falcosecurity/libs
