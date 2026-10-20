@@ -192,6 +192,7 @@ flowchart TB
 | `libs`（libsinsp / libscap） | イベントの取得・パースを担う中核ライブラリ群。Falcoエンジンの土台 |
 | `plugin-sdk-go` | プラグインを開発するためのGo SDK。第1節のプラグイン拡張を支える |
 | `k8s-metacollector` | Kubernetesメタデータを一箇所に集約・配信。`k8smeta` プラグインと対で動作し、**APIサーバへの負荷を軽減** |
+| `k8smeta` プラグイン | 各ノードのFalcoに対し、`k8s-metacollector`が集約したメタデータを配信するプラグイン |
 | `charts` | 公式Helmチャート。Falco本体やFalcosidekickの導入を標準化 |
 | `operator` | Kubernetes Operator。CRDでFalcoのデプロイ・設定・ルール配布をKubernetesネイティブに管理する |
 | `event-generator` | ルールの動作検証のため、擬似的な悪性アクティビティを生成するツール。広く使われている（深い主張をする際は最新仕様を要確認） |

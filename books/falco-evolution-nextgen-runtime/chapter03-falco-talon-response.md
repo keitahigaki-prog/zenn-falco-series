@@ -154,6 +154,7 @@ Talon の設定は大きく「ルール（rules）」と「アクション（act
 | ネットワーク | Calico（network-policy provider） | Calico でネットワークポリシーを適用 |
 | ネットワーク | Cilium（network-policy provider） | Cilium でネットワークポリシーを適用 |
 | ネットワーク | capture network traffic | 対象のネットワークトラフィックをキャプチャ |
+| ログ | log | イベント内容をログ出力する |
 | リソース | delete resource | 任意の K8s リソースを削除 |
 | ノード | drain node | ノードを drain（退避）する |
 | フォレンジック | download file | 対象から証拠ファイルを取得 |
